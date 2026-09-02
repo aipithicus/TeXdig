@@ -4,4 +4,4 @@
  * Subpath exports (`texdig/source`, `texdig/latex`, …) are added as each tier lands.
  * See docs/architecture/overview.md for the tier layout.
  */
-export {};
+export * from "./source/index.js";

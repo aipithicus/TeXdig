@@ -16,6 +16,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./source": {
+      "types": "./dist/source/index.d.ts",
+      "default": "./dist/source/index.js"
+    },
     "./package.json": "./package.json"
   },
   "publishConfig": {
