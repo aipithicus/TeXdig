@@ -1,12 +1,13 @@
 /**
  * Immutable source bytes, stable basis identity, and recorded decoding facts.
  *
- * A snapshot owns a copy of the bytes it hashes. Public byte access always
- * returns another copy, so neither the caller's input nor a returned view can
- * invalidate the identity after construction. The identity is exactly the
- * serializable triple `sourceId + contentHash + revision`; decoding metadata is
- * deliberately not part of compatibility because the substrate records it but
- * never applies it.
+ * A root snapshot owns a copy of the bytes it hashes. Internally minted child
+ * snapshots may share a view of that already-owned immutable storage. Public
+ * byte access always returns another copy, so neither caller input nor a
+ * returned value can invalidate identity after construction. The identity is
+ * exactly the serializable triple `sourceId + contentHash + revision`;
+ * decoding metadata is deliberately not part of compatibility because the
+ * substrate records it but never applies it.
  */
 
 // The substrate commits to the Node runtime here. Identity must exist at
@@ -72,6 +73,7 @@ interface SnapshotState {
 }
 
 const STATES = new WeakMap<SourceSnapshot, SnapshotState>();
+const INTERNAL_STATES = new WeakMap<SourceSnapshotOptions, SnapshotState>();
 
 function stateFor(snapshot: SourceSnapshot): SnapshotState {
   const state = STATES.get(snapshot);
@@ -175,7 +177,7 @@ function decodingFacts(
     : Object.freeze({ ...common, declaredEncoding });
 }
 
-/** An immutable root snapshot and the identity of its byte coordinate basis. */
+/** An immutable snapshot and the identity of its byte coordinate basis. */
 export class SourceSnapshot {
   public readonly sourceId: string;
   public readonly contentHash: string;
@@ -190,8 +192,9 @@ export class SourceSnapshot {
     assertRevision(options.revision);
     assertDeclaredEncoding(options.declaredEncoding);
 
-    const ownedBytes = Uint8Array.from(bytes);
-    const utf8 = decodeUtf8(ownedBytes);
+    const internalState = INTERNAL_STATES.get(options);
+    const ownedBytes = internalState?.bytes ?? Uint8Array.from(bytes);
+    const utf8 = internalState?.utf8 ?? decodeUtf8(ownedBytes);
     const contentHash = hashBytes(ownedBytes);
     const identity: SourceIdentity = Object.freeze({
       sourceId: options.sourceId,
@@ -271,4 +274,86 @@ export class SourceSnapshot {
  */
 export function snapshotUtf8Units(snapshot: SourceSnapshot): Utf8Units {
   return stateFor(snapshot).utf8;
+}
+
+function exactUnitBoundary(units: Utf8Units, offset: number): number {
+  let low = 0;
+  let high = units.starts.length;
+  while (low < high) {
+    const middle = low + Math.floor((high - low) / 2);
+    const candidate = units.starts[middle] ?? 0;
+    if (candidate < offset) {
+      low = middle + 1;
+    } else {
+      high = middle;
+    }
+  }
+  if (low >= units.starts.length || units.starts[low] !== offset) {
+    throw new RangeError(
+      `byte offset ${String(offset)} falls inside a valid multi-byte UTF-8 unit`,
+    );
+  }
+  return low;
+}
+
+function sliceUtf8Units(
+  parent: Utf8Units,
+  startIndex: number,
+  endIndex: number,
+  bytes: Uint8Array,
+): Utf8Units {
+  const count = endIndex - startIndex;
+  const starts = new Uint32Array(count + 1);
+  const parentStart = parent.starts[startIndex] ?? 0;
+  let invalidCount = 0;
+
+  for (let index = 0; index <= count; index++) {
+    starts[index] = (parent.starts[startIndex + index] ?? parentStart) - parentStart;
+    if (index < count && parent.valid[startIndex + index] === 0) {
+      invalidCount++;
+    }
+  }
+
+  const hasBom =
+    bytes.length >= 3 &&
+    (bytes[0] ?? 0) === 0xef &&
+    (bytes[1] ?? 0) === 0xbb &&
+    (bytes[2] ?? 0) === 0xbf;
+
+  return Object.freeze({
+    byteLength: bytes.length,
+    count,
+    invalidCount,
+    hasBom,
+    starts,
+    values: parent.values.slice(startIndex, endIndex),
+    valid: parent.valid.slice(startIndex, endIndex),
+  });
+}
+
+/**
+ * Package-internal construction of a snapshot view. The returned snapshot owns
+ * its identity and derived columns but shares the parent's immutable byte
+ * storage. `window` must end on cached UTF-8 unit boundaries.
+ *
+ * @internal
+ */
+export function snapshotView(
+  parent: SourceSnapshot,
+  window: ByteSpan,
+  options: SourceSnapshotOptions,
+): SourceSnapshot {
+  parent.validateSpan(window);
+  const parentState = stateFor(parent);
+  const startIndex = exactUnitBoundary(parentState.utf8, window.start);
+  const endIndex = exactUnitBoundary(parentState.utf8, window.end);
+  const bytes = parentState.bytes.subarray(window.start, window.end);
+  const utf8 = sliceUtf8Units(parentState.utf8, startIndex, endIndex, bytes);
+  const internalOptions: SourceSnapshotOptions = { ...options };
+  INTERNAL_STATES.set(internalOptions, { bytes, utf8 });
+  try {
+    return new SourceSnapshot(bytes, internalOptions);
+  } finally {
+    INTERNAL_STATES.delete(internalOptions);
+  }
 }
