@@ -100,7 +100,7 @@ Unit tests are colocated as `*.test.ts` beside the module they cover and are exc
 - Dependencies live in `node_modules/` and nowhere else; they are never edited or vendored. pnpm keeps one content-addressable store per drive (here `D:\.pnpm-store`) and hard-links each project's `node_modules/` into it.
 - Versions are declared once in the catalog; internal packages reference each other with the `workspace:` protocol. `pnpm dedupe --check` runs in CI so a second version of anything is a failing build, not a surprise.
 - If a dependency ever needs a local fix, use `pnpm patch <pkg>` and commit the result under `patches/`; pnpm re-applies it on every install and fails loudly when it no longer applies.
-- `texdig` declares no runtime dependencies. The root manifest holds the toolchain only.
+- `texdig` declares no runtime dependencies. The root manifest holds the toolchain only. The engine targets the Node runtime and uses Node built-ins where they fit (`node:crypto` computes snapshot identity); no browser build is provided.
 
 ### Generated code and caches
 

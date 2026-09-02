@@ -9,12 +9,24 @@
  * never applies it.
  */
 
+// The substrate commits to the Node runtime here. Identity must exist at
+// construction, so the SHA-256 is computed synchronously through node:crypto. A
+// consumer outside Node would need an asynchronous WebCrypto construction path;
+// none is planned until such a consumer exists.
 import { createHash } from "node:crypto";
 
 import { byteOffset, byteSpan, type ByteOffset, type ByteSpan } from "./span.js";
 import { decodeUtf8, type Utf8Units } from "./utf8.js";
 
-/** The three-value result of byte-level UTF-8 detection. */
+/**
+ * The three-value result of byte-level UTF-8 detection.
+ *
+ * `utf-8-bom` records only that the bytes begin with the encoded byte-order mark.
+ * It is a declaration fact, not a validity verdict, and it coexists with entries
+ * in `invalidUtf8ByteOffsets` when ill-formed bytes follow the mark.
+ * `utf-8-compatible` means no BOM and no invalid unit; `unknown` means at least
+ * one invalid unit and no BOM. Read the value together with the invalid offsets.
+ */
 export type DetectedEncoding = "utf-8-bom" | "utf-8-compatible" | "unknown";
 
 /** The line-ending population found in the original bytes. */
@@ -32,7 +44,7 @@ export interface SourceDecodingFacts {
   readonly hasBom: boolean;
   /** Caller-supplied metadata, retained exactly and never used to transcode bytes. */
   readonly declaredEncoding?: string;
-  /** A BOM is identifying; otherwise well-formed bytes are only UTF-8-compatible. */
+  /** See `DetectedEncoding`: a BOM value is a declaration, so read it with `invalidUtf8ByteOffsets`. */
   readonly detectedEncoding: DetectedEncoding;
   /** Start offset of every invalid one-byte decoder unit, in source order. */
   readonly invalidUtf8ByteOffsets: readonly ByteOffset[];
