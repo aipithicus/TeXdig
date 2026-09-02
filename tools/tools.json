@@ -1,0 +1,14 @@
+{
+  "description": "External executables that npm cannot carry. Binaries under tools/ are gitignored; this manifest is the pinned record. Verify with `pnpm tools:verify`. At runtime, adapters resolve each tool from configuration (for example TEXDIG_TECTONIC) or from the path below, and record its version and hash in every observation they produce.",
+  "tools": [
+    {
+      "name": "tectonic",
+      "version": "0.16.9+20260504",
+      "path": "tools/tectonic/tectonic.exe",
+      "platform": "win32",
+      "sha256": "6b9229376278d1affccfaee51718fd3910e1ad983cf95ce31fd275223d2398b3",
+      "source": "https://github.com/tectonic-typesetting/tectonic/releases",
+      "role": "compile witness backend for the validation plane"
+    }
+  ]
+}
