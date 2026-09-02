@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "isolatedDeclarations": false,
+    "paths": {
+      "texdig": ["./packages/texdig/src/index.ts"],
+      "texdig/*": ["./packages/texdig/src/*"]
+    }
+  },
+  "include": [
+    "packages/*/src/**/*.test.ts",
+    "tests/**/*.ts",
+    "scripts/**/*.ts",
+    "eslint.config.ts",
+    "vitest.config.ts"
+  ]
+}

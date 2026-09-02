@@ -1,0 +1,11 @@
+{
+  "plugins": ["prettier-plugin-pegjs"],
+  "printWidth": 100,
+  "proseWrap": "preserve",
+  "overrides": [
+    {
+      "files": ["*.peggy", "*.pegjs"],
+      "options": { "parser": "pegjs" }
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+# byte-exact material is never reformatted
+fixtures/
+tools/
+artifacts/
+coverage/
+**/dist/
+**/src/generated/
+node_modules/
+pnpm-lock.yaml

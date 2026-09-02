@@ -1,0 +1,8 @@
+# Normalize source to LF; never touch byte-exact fixtures or binaries.
+* text=auto eol=lf
+fixtures/** -text
+tools/** -text
+*.pdf binary
+*.png binary
+*.jpg binary
+*.eps binary

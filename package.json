@@ -1,0 +1,46 @@
+{
+  "name": "texdig-workspace",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Workspace root for TeXdig, a source-faithful static language engine for TeX/LaTeX projects.",
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "typecheck": "tsc -b && tsc -p tsconfig.tests.json",
+    "build": "tsc -b",
+    "clean": "tsc -b --clean",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "pack-check": "pnpm -r exec publint && attw --pack packages/texdig --profile esm-only",
+    "tools:verify": "node scripts/verify-tools.ts",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "pnpm build && changeset publish"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "catalog:",
+    "@changesets/cli": "catalog:",
+    "@eslint/js": "catalog:",
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "eslint-config-prettier": "catalog:",
+    "globals": "catalog:",
+    "jiti": "catalog:",
+    "peggy": "catalog:",
+    "prettier": "catalog:",
+    "prettier-plugin-pegjs": "catalog:",
+    "publint": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:",
+    "vitest": "catalog:"
+  }
+}

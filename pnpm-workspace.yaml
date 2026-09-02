@@ -1,0 +1,31 @@
+packages:
+  - packages/*
+
+# Single-version policy: every dependency version is declared exactly once here and
+# referenced as "catalog:" from package manifests. `pnpm dedupe --check` in CI fails on drift.
+catalog:
+  "@arethetypeswrong/cli": 0.18.5
+  "@changesets/cli": 3.0.1
+  "@eslint/js": 10.0.1
+  # Types track the MINIMUM supported Node (engines >=24), not the development version,
+  # so 26-only APIs cannot slip into the library unnoticed.
+  "@types/node": 24.13.3
+  "@vitest/coverage-v8": 4.1.11
+  eslint: 10.9.1
+  eslint-config-prettier: 10.1.8
+  globals: 17.12.0
+  # ESLint loads eslint.config.ts through jiti (Node's native type stripping is not used by its loader).
+  jiti: 2.7.0
+  peggy: 5.1.0
+  prettier: 3.9.6
+  prettier-plugin-pegjs: 2.0.2
+  publint: 0.3.24
+  # TypeScript 6.0.x is the deliberate choice: the last TypeScript with a mature programmatic API,
+  # which the type-aware lint rules depend on. TypeScript 7 ships without one. Revisit only when a
+  # stable 7.x API exists and typescript-eslint has a stable release built on it.
+  typescript: 6.0.3
+  typescript-eslint: 8.69.0
+  vitest: 4.1.11
+
+minimumReleaseAgeExclude:
+  - globals@17.12.0

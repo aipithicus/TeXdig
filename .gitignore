@@ -1,0 +1,21 @@
+DocOps.md
+.codex/
+.grok/
+.claude/
+.cursor/
+.mcp.json
+
+coverage/
+
+**/.snapshot/**
+**/.doc-dive/**
+
+node_modules/
+artifacts/**
+**/dist/** 
+**/src/generated/**
+*.tsbuildinfo
+
+# external executables are never committed; tools/tools.json is the pinned record
+tools/**
+!tools/tools.json
