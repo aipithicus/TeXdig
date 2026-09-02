@@ -38,9 +38,9 @@ Fixtures are byte-exact; `.gitattributes` marks `fixtures/**` as `-text` so line
 
 ---
 
-## 4. External Stress Corpus
+## 4. External Corpus Runs
 
-A larger corpus of real documents is exercised through a harness that takes the corpus root as configuration. The corpus and its run outputs are not part of the repository and are not CI gates; the harness is. Results feed development iteration and fixture selection.
+Larger corpora of real documents are exercised by downstream applications that consume the engine as a dependency and own their corpus, batch execution, run hygiene, and artifacts. Those runs are not part of this repository and are not CI gates; they inform development iteration and the selection of properties for `fixtures/negative-spec/`. The engine exposes only its programmatic API for this purpose — no corpus runner ships here.
 
 ---
 

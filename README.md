@@ -44,13 +44,13 @@ Pre-release. The repository is in its scaffolding phase. The kernel contracts ar
 
 ## Documentation
 
-| Document                                                           | Description                                                                            |
-| :----------------------------------------------------------------- | :------------------------------------------------------------------------------------- |
-| [**DEVELOPMENT.md**](DEVELOPMENT.md)                               | Toolchain, commands, project layout, build configuration.                              |
-| [**AGENTS.md**](AGENTS.md)                                         | Agent orientation, working culture, repository conventions.                            |
-| [**Architecture Overview**](docs/architecture/overview.md)         | Tiers, source and coordinate model, package shape, lineage.                            |
-| [**Design Principles**](docs/architecture/design-principles.md)    | Principles that shape the engine and questions for placing new capabilities.           |
-| [**Kernel Contracts**](docs/specification/contracts.md)            | The contracts the engine is built to, including the registry and binding contracts.    |
-| [**Scope & Non-Goals**](docs/specification/non-goals.md)           | Deliberately absent features and boundaries.                                           |
-| [**Capability Outlook**](docs/specification/capability-outlook.md) | Later capabilities and open design questions, without release commitments.             |
-| [**Verification & Testing**](docs/testing.md)                      | Verification approach, fixture tiers, and the external stress-corpus harness contract. |
+| Document                                                           | Description                                                                         |
+| :----------------------------------------------------------------- | :---------------------------------------------------------------------------------- |
+| [**DEVELOPMENT.md**](DEVELOPMENT.md)                               | Toolchain, commands, project layout, build configuration.                           |
+| [**AGENTS.md**](AGENTS.md)                                         | Agent orientation, working culture, repository conventions.                         |
+| [**Architecture Overview**](docs/architecture/overview.md)         | Tiers, source and coordinate model, package shape, lineage.                         |
+| [**Design Principles**](docs/architecture/design-principles.md)    | Principles that shape the engine and questions for placing new capabilities.        |
+| [**Kernel Contracts**](docs/specification/contracts.md)            | The contracts the engine is built to, including the registry and binding contracts. |
+| [**Scope & Non-Goals**](docs/specification/non-goals.md)           | Deliberately absent features and boundaries.                                        |
+| [**Capability Outlook**](docs/specification/capability-outlook.md) | Later capabilities and open design questions, without release commitments.          |
+| [**Verification & Testing**](docs/testing.md)                      | Verification approach, fixture tiers, and the boundary with external corpus runs.   |

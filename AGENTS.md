@@ -17,7 +17,7 @@ Do not guess architectural details — consult the relevant source. Contract doc
 | **Kernel, Registry & Binding Contracts**   | [**`docs/specification/contracts.md`**](docs/specification/contracts.md)                    |
 | **Scope Boundaries**                       | [**`docs/specification/non-goals.md`**](docs/specification/non-goals.md)                    |
 | **Later Capabilities & Open Questions**    | [**`docs/specification/capability-outlook.md`**](docs/specification/capability-outlook.md)  |
-| **Verification & Testing Approach**        | [**`docs/testing.md`**](docs/testing.md) (fixture tiers, oracles, stress-corpus harness)    |
+| **Verification & Testing Approach**        | [**`docs/testing.md`**](docs/testing.md) (fixture tiers, oracles, external corpus runs)     |
 | **Build & Packaging Workflows**            | [**`DEVELOPMENT.md`**](DEVELOPMENT.md) (toolchain, commands, layout, compiler flags)        |
 
 ---

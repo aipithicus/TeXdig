@@ -91,7 +91,7 @@ Unit tests are colocated as `*.test.ts` beside the module they cover and are exc
 
 - **Lattice** (`tsconfig.base.json`): `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`, `verbatimModuleSyntax`, `isolatedModules`, `isolatedDeclarations`, `erasableSyntaxOnly`; `module`/`moduleResolution` `nodenext`, so relative imports carry explicit `.js` extensions.
 - **Two kinds of project.** Package `tsconfig.json` files are `composite` and emit to `dist/` through the root solution file (`tsc -b`, incremental via `dist/.tsbuildinfo`). `tsconfig.tests.json` is a no-emit project covering colocated tests, `tests/`, `scripts/`, and the config files, with `paths` mapping `texdig` to its source. Together they satisfy the rule that every `.ts` file belongs to a checked project; nothing outside `src/` ever reaches `dist/`.
-- **Module format**: ESM only. No bundler, no dual publish.
+- **Module format**: ESM only. No bundler, no dual publish. Library modules avoid top-level `await` so the package stays loadable from CommonJS consumers through Node's `require(esm)`; scripts may use it.
 
 ### Dependencies
 
@@ -128,4 +128,4 @@ Unit tests are colocated as `*.test.ts` beside the module they cover and are exc
 - [**Kernel Contracts**](docs/specification/contracts.md) — the contracts the engine is built to.
 - [**Scope & Non-Goals**](docs/specification/non-goals.md) — deliberately absent features.
 - [**Capability Outlook**](docs/specification/capability-outlook.md) — later capabilities and open questions.
-- [**Verification & Testing**](docs/testing.md) — fixture tiers, oracles, stress-corpus harness.
+- [**Verification & Testing**](docs/testing.md) — fixture tiers, oracles, and the boundary with external corpus runs.
