@@ -33,3 +33,13 @@ export {
 } from "./span.js";
 
 export { type Utf8Unit, type Utf8Units, decodeUtf8, listUnits, unitAt } from "./utf8.js";
+
+export {
+  SourceSnapshot,
+  type DetectedEncoding,
+  type LineEndingFacts,
+  type LineEndingStyle,
+  type SourceDecodingFacts,
+  type SourceIdentity,
+  type SourceSnapshotOptions,
+} from "./snapshot.js";
