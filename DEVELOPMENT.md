@@ -77,6 +77,7 @@ texdig/
 ├── tests/                       # cross-package suites
 ├── scripts/                     # verify-tools.ts, codegen and harvest tooling — all in tsconfig.tests.json
 ├── tools/                       # external executables (gitignored) + tools.json (committed manifest)
+├── private/                     # gitignored — local glue scripts that drive external corpus runs (AGENTS.md, Private/)
 ├── artifacts/                   # run outputs — gitignored, never imported as source
 └── node_modules/                # gitignored — root install; pnpm's virtual store lives in .pnpm/
 ```
@@ -113,6 +114,10 @@ Unit tests are colocated as `*.test.ts` beside the module they cover and are exc
 ### External executables
 
 - Tools npm cannot carry (the Tectonic engine) live under `tools/`, gitignored, with `tools/tools.json` as the committed record of name, version, platform, SHA-256, and source. `pnpm tools:verify` checks present binaries against the manifest and reports absent ones without failing. Adapters resolve a tool from configuration (for example `TEXDIG_TECTONIC`) or the manifest path and record its version and hash in every observation they produce.
+
+### Local glue
+
+- `private/` holds untracked, machine-local scripts that invoke external infrastructure — the corpus runner of a downstream application, for example. Nothing in the repository depends on them, and they are never committed.
 
 ### Known `.js` exceptions
 

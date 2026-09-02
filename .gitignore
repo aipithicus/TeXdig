@@ -6,6 +6,7 @@ DocOps.md
 .mcp.json
 
 coverage/
+private/ 
 
 **/.snapshot/**
 **/.doc-dive/**

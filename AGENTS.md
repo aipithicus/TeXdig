@@ -82,3 +82,7 @@ pnpm pack-check
 `pnpm codegen --check` joins the mandate when the first grammar lands.
 
 Scripts are established at scaffold; see [`DEVELOPMENT.md`](DEVELOPMENT.md).
+
+## Private/
+
+The private/ directory is for holding scripts used to call code from other projects on the local filesystem, such as the codex-scientiae latex gauntlet in order to leverage the infrastructure and tools of that project for testing TeXdig on wild data
