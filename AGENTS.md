@@ -74,6 +74,7 @@ Before concluding any implementation task or refactor, run and pass:
 pnpm typecheck
 pnpm lint
 pnpm test
+pnpm conformance:check
 pnpm format:check
 pnpm build
 pnpm pack-check

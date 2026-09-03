@@ -32,6 +32,8 @@ pnpm typecheck                   # tsc -b (source projects) + tsc -p tsconfig.te
 pnpm lint
 pnpm format:check                # prettier --check .  (pnpm format to write)
 pnpm test                        # vitest run   (pnpm test:watch, pnpm test:coverage)
+pnpm conformance:check           # regenerate source/region fixture expectations and require zero difference
+pnpm conformance:deep            # add the exhaustive deep conformance census
 pnpm build                       # tsc -b — emits dist/ per package (ESM, .d.ts, source maps)
 pnpm pack-check                  # publint + arethetypeswrong on the built packages
 pnpm tools:verify                # check external executables against tools/tools.json
@@ -74,9 +76,9 @@ texdig/
 │   │   └── node_modules/        # gitignored — symlinks into the pnpm store
 │   ├── projections/             # @texdig/projections — added at the projections phase
 │   └── cli/                     # @texdig/cli — added when demand exists
-├── fixtures/                    # byte-exact: differential/  negative-spec/  demo/
+├── fixtures/                    # byte-exact: conformance/  differential/  negative-spec/  demo/
 ├── tests/                       # cross-package suites
-├── scripts/                     # verify-tools.ts, codegen and harvest tooling — all in tsconfig.tests.json
+├── scripts/                     # conformance/, generation, verification, codegen, harvest — all in tsconfig.tests.json
 ├── tools/                       # external executables (gitignored) + tools.json (committed manifest)
 ├── private/                     # gitignored — local glue scripts that drive external corpus runs (AGENTS.md, Private/)
 ├── artifacts/                   # run outputs — gitignored, never imported as source
@@ -92,7 +94,7 @@ Unit tests are colocated as `*.test.ts` beside the module they cover and are exc
 ### Compiler
 
 - **Lattice** (`tsconfig.base.json`): `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`, `verbatimModuleSyntax`, `isolatedModules`, `isolatedDeclarations`, `erasableSyntaxOnly`; `module`/`moduleResolution` `nodenext`, so relative imports carry explicit `.js` extensions.
-- **Two kinds of project.** Package `tsconfig.json` files are `composite` and emit to `dist/` through the root solution file (`tsc -b`, incremental via `dist/.tsbuildinfo`). `tsconfig.tests.json` is a no-emit project covering colocated tests, `tests/`, `scripts/`, and the config files, with `paths` mapping `texdig` to its source. Together they satisfy the rule that every `.ts` file belongs to a checked project; nothing outside `src/` ever reaches `dist/`.
+- **Two kinds of project.** Package `tsconfig.json` files are `composite` and emit to `dist/` through the root solution file (`tsc -b`, incremental via `dist/.tsbuildinfo`). `tsconfig.tests.json` is a no-emit project covering colocated tests, `tests/`, `scripts/`, and the config files, with `paths` mapping `texdig` to its source. Its scripts use explicit `.ts` imports because Node executes them through native type stripping and does not remap `.js` specifiers to source files. Together they satisfy the rule that every `.ts` file belongs to a checked project; nothing outside `src/` ever reaches `dist/`.
 - **Module format**: ESM only. No bundler, no dual publish. Library modules avoid top-level `await` so the package stays loadable from CommonJS consumers through Node's `require(esm)`; scripts may use it.
 
 ### Dependencies
@@ -111,6 +113,7 @@ Unit tests are colocated as `*.test.ts` beside the module they cover and are exc
 ### Fixtures
 
 - `fixtures/**` is byte-exact. `.gitattributes` marks it `-text` (no line-ending normalization), `.editorconfig` unsets whitespace rules for it, and `.prettierignore` excludes it from formatting.
+- `fixtures/conformance/README.md` defines the language-neutral line format. `pnpm conformance:generate` regenerates the source and region families, `pnpm conformance:check` verifies a zero-difference regeneration, and `pnpm conformance:deep` runs the exhaustive deep census in addition to the default test tier.
 
 ### External executables
 

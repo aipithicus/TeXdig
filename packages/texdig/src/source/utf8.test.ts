@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { CLASS_REPRESENTATIVES, fatalScalars } from "../../../../scripts/conformance/oracles.ts";
+import { XorShift32 } from "../../../../scripts/conformance/prng.ts";
 import { type Utf8Units, decodeUtf8, listUnits, unitAt } from "./utf8.js";
 
 function bytes(...values: number[]): Uint8Array {
@@ -13,21 +15,6 @@ function hex(input: Uint8Array): string {
 /** `[start, end, valid, value]` per unit, for compact expectations. */
 function flat(units: Utf8Units): [number, number, number, number][] {
   return listUnits(units).map((u) => [u.span.start, u.span.end, u.valid ? 1 : 0, u.value]);
-}
-
-/**
- * Oracle: the platform decoder in fatal mode. `ignoreBOM: true` keeps U+FEFF in
- * the output, matching the `atoms` convention. Returns the scalar sequence for
- * well-formed input and `undefined` for ill-formed input.
- */
-const fatal = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true });
-
-function oracle(input: Uint8Array): number[] | undefined {
-  try {
-    return Array.from(fatal.decode(input), (ch) => ch.codePointAt(0) ?? -1);
-  } catch {
-    return undefined;
-  }
 }
 
 function isSurrogate(scalar: number): boolean {
@@ -100,7 +87,7 @@ function firstViolation(input: Uint8Array): string | undefined {
     return "hasBom";
   }
 
-  const expected = oracle(input);
+  const expected = fatalScalars(input);
   if (invalid === 0) {
     if (expected === undefined) {
       return "oracle rejects input the decoder accepted";
@@ -240,11 +227,6 @@ describe("decodeUtf8 named cases", () => {
  * table. A decoder that is correct on these representatives is correct on every
  * byte, because the table's decisions depend only on the class.
  */
-const CLASS_REPRESENTATIVES: readonly number[] = [
-  0x00, 0x7f, 0x80, 0x8f, 0x90, 0x9f, 0xa0, 0xbf, 0xc0, 0xc1, 0xc2, 0xdf, 0xe0, 0xe1, 0xec, 0xed,
-  0xee, 0xef, 0xf0, 0xf1, 0xf3, 0xf4, 0xf5, 0xff,
-];
-
 const CENSUS_TIMEOUT_MS = 60_000;
 
 describe("decodeUtf8 exhaustive class census", () => {
@@ -283,13 +265,8 @@ describe("decodeUtf8 seeded random census", () => {
   it(
     "satisfies the laws, the oracle, and prefix stability on longer inputs",
     () => {
-      let state = 0x9e3779b9;
-      const next = (): number => {
-        state ^= state << 13;
-        state ^= state >>> 17;
-        state ^= state << 5;
-        return state >>> 0;
-      };
+      const random = new XorShift32(0x9e37_79b9);
+      const next = (): number => random.next();
       const reps = CLASS_REPRESENTATIVES;
       const failures: string[] = [];
       for (let round = 0; round < 5000; round++) {

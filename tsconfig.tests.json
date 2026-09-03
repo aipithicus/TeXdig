@@ -6,6 +6,7 @@
     "declarationMap": false,
     "sourceMap": false,
     "isolatedDeclarations": false,
+    "allowImportingTsExtensions": true,
     "paths": {
       "texdig": ["./packages/texdig/src/index.ts"],
       "texdig/*": ["./packages/texdig/src/*"]

@@ -1,0 +1,39 @@
+# family: utf8/classes
+# schema: 1
+# generator: texdig-conformance 0.0.0
+# convention: atoms
+# rule: cartesian products of the 24 class representatives in least-significant-position-first order; lengths 1 through 5
+# laws: U1 U2 U3 U4
+# classes: ASCII=00-7F continuation-1=80-8F continuation-2=90-9F continuation-3=A0-BF never-valid-1=C0-C1 lead-2=C2-DF lead-e0=E0 lead-3a=E1-EC lead-ed=ED lead-3b=EE-EF lead-f0=F0 lead-4=F1-F3 lead-f4=F4 never-valid-2=F5-FF
+# representatives: 00 7F 80 8F 90 9F A0 BF C0 C1 C2 DF E0 E1 EC ED EE EF F0 F1 F3 F4 F5 FF
+# digest: sha256:5da1681abc2030efab54cd585bffd8495872300675aebbb67f3ed5cf04ef19ad canon:rows-v1 count:24 tier:default
+# digest: sha256:3ab6dd7709f410292bc6b17355f8e641a7302dfa934ec23851227419433e4128 canon:rows-v1 count:576 tier:default
+# digest: sha256:8e396da1f7562d6c9fa297bab9ec1f1a35378a4eeb2791f5a058288f5d5b3279 canon:rows-v1 count:13824 tier:default
+# digest: sha256:fbaf276960394f94042a89750fc956a70c09aa004cc3497eaef69be66eed21be canon:rows-v1 count:331776 tier:default
+# digest: sha256:b3c44f26be9b49b077998228fe659c2c1c360431e1d1593b66383ee122ec268a canon:rows-v1 count:7962624 tier:deep
+# Explicit illustration: all length-one rows. Digest lines are ordered by lengths 1, 2, 3, 4, 5.
+
+00 ; U:0-1:S:0 ; N:0 ; M:0
+7F ; U:0-1:S:7F ; N:0 ; M:0
+80 ; U:0-1:I:80 ; N:1 ; M:0
+8F ; U:0-1:I:8F ; N:1 ; M:0
+90 ; U:0-1:I:90 ; N:1 ; M:0
+9F ; U:0-1:I:9F ; N:1 ; M:0
+A0 ; U:0-1:I:A0 ; N:1 ; M:0
+BF ; U:0-1:I:BF ; N:1 ; M:0
+C0 ; U:0-1:I:C0 ; N:1 ; M:0
+C1 ; U:0-1:I:C1 ; N:1 ; M:0
+C2 ; U:0-1:I:C2 ; N:1 ; M:0
+DF ; U:0-1:I:DF ; N:1 ; M:0
+E0 ; U:0-1:I:E0 ; N:1 ; M:0
+E1 ; U:0-1:I:E1 ; N:1 ; M:0
+EC ; U:0-1:I:EC ; N:1 ; M:0
+ED ; U:0-1:I:ED ; N:1 ; M:0
+EE ; U:0-1:I:EE ; N:1 ; M:0
+EF ; U:0-1:I:EF ; N:1 ; M:0
+F0 ; U:0-1:I:F0 ; N:1 ; M:0
+F1 ; U:0-1:I:F1 ; N:1 ; M:0
+F3 ; U:0-1:I:F3 ; N:1 ; M:0
+F4 ; U:0-1:I:F4 ; N:1 ; M:0
+F5 ; U:0-1:I:F5 ; N:1 ; M:0
+FF ; U:0-1:I:FF ; N:1 ; M:0

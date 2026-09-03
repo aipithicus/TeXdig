@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { spanPredicates } from "../../../../scripts/conformance/oracles.ts";
 import {
   CONVENTIONS,
   type ByteSpan,
@@ -21,38 +22,6 @@ import {
   utf16Offset,
   utf16Span,
 } from "./span.js";
-
-/**
- * Independent oracle: the set of unit cells `[k, k + 1)` a span covers. Cell sets
- * decide intersection and crossing for every span, and containment for every
- * non-empty inner span. Containment of an empty inner span is a boundary fact
- * with no cell reading, so it is stated separately from Doccer's definition.
- */
-function cells(s: ByteSpan): Set<number> {
-  const out = new Set<number>();
-  for (let k = s.start; k < s.end; k++) {
-    out.add(k);
-  }
-  return out;
-}
-
-function isSubset(inner: Set<number>, outer: Set<number>): boolean {
-  for (const k of inner) {
-    if (!outer.has(k)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-function overlaps(a: Set<number>, b: Set<number>): boolean {
-  for (const k of a) {
-    if (b.has(k)) {
-      return true;
-    }
-  }
-  return false;
-}
 
 const BOUNDARIES = 6;
 
@@ -121,21 +90,18 @@ describe("span predicates against the cell oracle", () => {
 
   it("containsOffset is half-open membership", () => {
     for (const s of spans) {
-      const covered = cells(s);
       for (let k = 0; k < BOUNDARIES; k++) {
-        expect(containsOffset(s, byteOffset(k))).toBe(covered.has(k));
+        expect(containsOffset(s, byteOffset(k))).toBe(s.start <= k && k < s.end);
       }
     }
   });
 
   it("intersects and crosses agree with the cell sets on every pair", () => {
     for (const a of spans) {
-      const ca = cells(a);
       for (const b of spans) {
-        const cb = cells(b);
-        const overlap = overlaps(ca, cb);
+        const [, , overlap, crossing] = spanPredicates(a.start, a.end, b.start, b.end);
         expect(intersects(a, b)).toBe(overlap);
-        expect(crosses(a, b)).toBe(overlap && !isSubset(cb, ca) && !isSubset(ca, cb));
+        expect(crosses(a, b)).toBe(crossing);
         expect(intersects(a, b)).toBe(intersects(b, a));
         expect(crosses(a, b)).toBe(crosses(b, a));
       }
@@ -144,11 +110,8 @@ describe("span predicates against the cell oracle", () => {
 
   it("containsSpan is cell inclusion for non-empty inners and a boundary fact for empties", () => {
     for (const outer of spans) {
-      const co = cells(outer);
       for (const inner of spans) {
-        const expected = isEmpty(inner)
-          ? outer.start <= inner.start && inner.start <= outer.end
-          : isSubset(cells(inner), co);
+        const [expected] = spanPredicates(outer.start, outer.end, inner.start, inner.end);
         expect(containsSpan(outer, inner)).toBe(expected);
         expect(properlyContains(outer, inner)).toBe(expected && !spanEquals(outer, inner));
       }

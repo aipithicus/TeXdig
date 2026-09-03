@@ -29,11 +29,12 @@ TeXdig's verification approach combines deterministic property tests over the ke
 
 ## 3. Fixture Tiers
 
-| Directory                 | Contents                                                     |
-| :------------------------ | :----------------------------------------------------------- |
-| `fixtures/differential/`  | Cases ported from the parents' test suites, with attribution |
-| `fixtures/negative-spec/` | Synthetic fixtures that isolate one property each            |
-| `fixtures/demo/`          | A small set of complete, license-cleared documents           |
+| Directory                 | Contents                                                                                 |
+| :------------------------ | :--------------------------------------------------------------------------------------- |
+| `fixtures/differential/`  | Cases ported from the parents' test suites, with attribution                             |
+| `fixtures/negative-spec/` | Synthetic fixtures that isolate one property each                                        |
+| `fixtures/demo/`          | A small set of complete, license-cleared documents                                       |
+| `fixtures/conformance/`   | Line-oriented source and region laws with explicit rows and deterministic census digests |
 
 Fixtures are byte-exact; `.gitattributes` marks `fixtures/**` as `-text` so line endings are never normalized.
 
@@ -49,6 +50,9 @@ Larger corpora of real documents are exercised by downstream applications that c
 
 ```powershell
 pnpm test
+pnpm conformance:check
+pnpm conformance:deep
 ```
 
 Unit tests are colocated as `*.test.ts`; cross-package differential and negative-specification suites live under `tests/`.
+The ordinary test command runs the default conformance tier. `conformance:deep` adds the exhaustive length-five UTF-8 class census.

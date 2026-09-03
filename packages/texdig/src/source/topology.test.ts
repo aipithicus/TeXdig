@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  lineIndexOracle as oracleLineIndex,
+  lineStartsOracle as oracleLineStarts,
+} from "../../../../scripts/conformance/oracles.ts";
+import {
   atomOffset,
   atomSpan,
   byteOffset,
@@ -118,28 +122,6 @@ describe("SourceTopology atoms", () => {
     ]);
   });
 });
-
-function oracleLineStarts(input: Uint8Array): number[] {
-  const starts = [0];
-  for (let index = 0; index < input.length; index++) {
-    const value = input[index];
-    if (value === 0x0d && input[index + 1] === 0x0a) {
-      index++;
-      starts.push(index + 1);
-    } else if (value === 0x0d || value === 0x0a) {
-      starts.push(index + 1);
-    }
-  }
-  return starts;
-}
-
-function oracleLineIndex(starts: readonly number[], offset: number): number {
-  let line = 0;
-  while (line + 1 < starts.length && (starts[line + 1] ?? 0) <= offset) {
-    line++;
-  }
-  return line;
-}
 
 function firstLineViolation(input: Uint8Array): string | undefined {
   const topology = SourceTopology.of(snapshot(input));
