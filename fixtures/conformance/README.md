@@ -24,6 +24,8 @@ Rows contain three or more fields separated by exactly ` ; `. Field one is the i
 - Occurrence metadata token: a non-empty ASCII token beginning with a letter or digit and continuing with letters, digits, `.`, `_`, `+`, or `-`.
 - Occurrence claim: `start-end/kind/producerId@version/priority/ruleId`; `priority` is a signed 32-bit integer and `-` in the final slot means no rule id.
 - Occurrence ordinal list: discovery ordinals separated by `.`, or `-` for empty. A lookup signature is `geometryOrdinals/priorityOrdinals`.
+- Span-set list: half-open spans joined as `[a,b),[c,d)`, or `-` for empty. Raw lists retain input order; result lists are normalized.
+- Span-set membership bitmap: one `0` or `1` per input byte in offset order, or `-` for a zero-byte carrier.
 - Booleans are `0` and `1`. Family-specific prefixes distinguish otherwise similar values.
 
 ## Digest canonicalization
@@ -71,6 +73,12 @@ The classes from Unicode Table 3-7 are: ASCII `00-7F`; continuations `80-8F`, `9
 - `O3`: geometry order is start ascending, end descending, then discovery ordinal.
 - `O4`: priority order is priority descending, then geometry order.
 - `O5`: intersecting-span and containing-position lookups agree with brute force under both orders; empty span queries and the EOF position return no records.
+- `B1`: normalization drops empty spans, sorts the remainder, and merges duplicate, nested, overlapping, and adjacent material into nonempty strictly separated spans.
+- `B2`: coverage is bitmap population, point containment is the indexed bitmap value, and equality requires compatible snapshot identity plus equal normalized members.
+- `B3`: union, intersection, subtraction, and whole-snapshot complement agree with pointwise bitmap operations.
+- `B4`: empty/whole identities, idempotence, commutativity where applicable, absorption, self-subtraction, complement, and double-complement laws hold.
+- `B5`: binary operations accept separately constructed identity-compatible snapshots and reject a changed source id, content hash, or revision.
+- `B6`: scoped coverage rebases down and back without change; direct downward rebasing succeeds exactly when every member lies within the slice window and otherwise rejects without clipping.
 
 ## Family fields and enumeration
 
@@ -84,3 +92,4 @@ The classes from Unicode Table 3-7 are: ASCII `00-7F`; continuations `80-8F`, `9
 - `snapshot/identity`: hash vector suffixes are `V:<sha256>`. Compatibility suffixes are `A:<sourceId>/<revision> ; R:<rightBytes>|<rightDeclaredEncoding>|<sourceId>|<revision> ; K:<compatible>`; the right input's declaration is explicit because compatibility ignores decoding metadata and compares only the identity triple. The digest census suffixes are `M:<mutatedIndex> ; C:<fingerprintChanged>` for xor-FF at indices 0 through 31.
 - `slice/laws`: canonical digest suffixes are `W:[parentStart,parentEnd) ; C:<childBytes> ; N:[childStart,childEnd)>[parentStart,parentEnd) ; O:<outsideExists>`. Generate 500 inputs using the stated seed and rule; all chosen boundaries come from the reference decoder's atoms.
 - `occurrence/batch`: `C:<claims> ; K:<kinds> ; D:<producerId@version> ; R:<ruleIds> ; G:<geometryOrdinals> ; Y:<priorityOrdinals> ; X:<spanQueries> ; P:<positionQueries>`. `C`, `K`, `D`, and `R` retain discovery/first-appearance order. `G` and `Y` use the two total orders above. `X` enumerates every half-open query span over input boundaries in start-major then end-major order; `P` enumerates positions from zero through EOF. Each lookup entry is a signature, entries are comma-separated, and no entry may be omitted. Four named rows make empty, duplicate, overlapping, nested, priority, and structural-producer cases explicit. For each of 500 digest cases, draw `length=1+next()%12`, then `length` bytes as `next()%256`, then `claimCount=next()%13`. Each claim consumes six draws in this order: `start=next()%length`; `end=start+1+next()%(length-start)`; `kind=next()%4` over `token,delimiter,comment,residue`; `producer=next()%3` over `lexer@1,parser@2,lexer@2`; `priority=next()%9-4`; and `rule=next()%3` over `-,scan-a,scan-b`.
+- `span-set/algebra`: `A:<rawLeft> ; B:<rawRight> ; N:<normalizedLeft> ; M:<normalizedRight> ; U:<union> ; I:<intersection> ; S:<leftSubtractRight> ; C:<leftComplement> ; V:<leftCoverage> ; P:<leftMembership> ; Q:<leftEqualsRight> ; W:[sliceStart,sliceEnd) ; R:<scopedLeftRebasedToChild> ; O:<leftWhollyInsideWindow>`. The input is a zero-byte carrier whose length defines the snapshot extent. Five named rows make zero-length extent, unsorted input, duplicates, empty spans, nesting, overlap, adjacency, whole coverage, algebra results, and both downward-rebase outcomes explicit. For each of 500 digest cases, draw `length=next()%17`; `leftCount=next()%9`, then two `next()%(length+1)` boundaries per left span; `rightCount=next()%9`, then two boundaries per right span; and two final boundaries for the slice window. Sort each boundary pair into start/end without dropping equality; the oracle bitmap performs normalization.

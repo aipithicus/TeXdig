@@ -9,3 +9,4 @@ export {
   type OccurrenceRecord,
   type ProducerStamp,
 } from "./occurrences.js";
+export { SpanSet } from "./span-set.js";

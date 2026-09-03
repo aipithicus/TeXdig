@@ -1,0 +1,13 @@
+# family: span-set/algebra
+# schema: 1
+# generator: texdig-conformance 0.0.0
+# seed: 0x5E7A2026
+# rule: 500 cases; length=next()%17; leftCount=next()%9 then two boundary draws per left span; rightCount=next()%9 then two boundary draws per right span; final two boundary draws form the slice window; each pair is sorted and may be empty
+# laws: B1 B2 B3 B4 B5 B6
+# digest: sha256:8f5bc720ae4a369c004a39098f9442bf4dfa431b3fb115418e481d246f94d359 canon:rows-v1 count:500 tier:default
+
+- ; E:utf-8 ; A:- ; B:- ; N:- ; M:- ; U:- ; I:- ; S:- ; C:- ; V:0 ; P:- ; Q:1 ; W:[0,0) ; R:- ; O:1
+00 00 00 00 00 00 00 00 ; E:utf-8 ; A:[4,6),[1,3),[3,4),[2,5),[0,1),[6,8),[1,3),[7,7) ; B:- ; N:[0,8) ; M:- ; U:[0,8) ; I:- ; S:[0,8) ; C:- ; V:8 ; P:11111111 ; Q:0 ; W:[0,8) ; R:[0,8) ; O:1
+00 00 00 00 00 00 00 00 00 00 ; E:utf-8 ; A:[7,9),[1,5) ; B:[3,8) ; N:[1,5),[7,9) ; M:[3,8) ; U:[1,9) ; I:[3,5),[7,8) ; S:[1,3),[8,9) ; C:[0,1),[5,7),[9,10) ; V:6 ; P:0111100110 ; Q:0 ; W:[2,9) ; R:[0,3),[5,7) ; O:0
+00 00 00 00 00 ; E:utf-8 ; A:[0,2),[2,5) ; B:[0,5),[3,3) ; N:[0,5) ; M:[0,5) ; U:[0,5) ; I:[0,5) ; S:- ; C:- ; V:5 ; P:11111 ; Q:1 ; W:[1,4) ; R:[0,3) ; O:0
+00 00 00 00 00 00 00 ; E:utf-8 ; A:[4,6),[2,3) ; B:[0,0),[6,7) ; N:[2,3),[4,6) ; M:[6,7) ; U:[2,3),[4,7) ; I:- ; S:[2,3),[4,6) ; C:[0,2),[3,4),[6,7) ; V:3 ; P:0010110 ; Q:0 ; W:[1,7) ; R:[1,2),[3,5) ; O:1
