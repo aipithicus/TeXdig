@@ -26,6 +26,8 @@ Rows contain two or more fields separated by exactly ` ; `. Field one is the inp
 
 `rows-v1` visits cases in the stated enumeration order. For each case it takes the row exactly as it would be written explicitly, without a comment, appends one LF byte (`\n`), and feeds the UTF-8 bytes to SHA-256. The lowercase hexadecimal digest covers the concatenation. CRLF is never used in canonical rows. Counts are decimal case counts. Explicit illustration rows do not alter a census digest.
 
+The `tier` field controls execution cadence, not fixture authority. A default-tier check may retain a parsed deep digest without recomputing its value; it still rejects missing, extra, malformed, or wrongly sized deep census metadata. A deep check recomputes every digest.
+
 ## PRNG
 
 Seeded families use xorshift32 in uint32 arithmetic. Starting from the header seed, each draw performs `state ^= state << 13`, `state ^= state >>> 17`, `state ^= state << 5`, then returns `state >>> 0`. A byte is `output % 256`; a class pick is `output % classCount`; length selection is stated by the family. A zero seed is invalid.

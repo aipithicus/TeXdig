@@ -21,6 +21,7 @@
     "test:coverage": "vitest run --coverage",
     "conformance:generate": "node scripts/generate-conformance.ts",
     "conformance:check": "node scripts/generate-conformance.ts --check",
+    "conformance:check:deep": "node scripts/generate-conformance.ts --check --deep",
     "conformance:deep": "node scripts/run-conformance-deep.ts",
     "pack-check": "pnpm -r exec publint && attw --pack packages/texdig --profile esm-only",
     "tools:verify": "node scripts/verify-tools.ts",

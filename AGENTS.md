@@ -82,6 +82,8 @@ pnpm pack-check
 
 `pnpm codegen --check` joins the mandate when the first grammar lands.
 
+`pnpm conformance:deep` is not a routine per-task gate. Run it when UTF-8 decoding, its oracle or fixture generator, digest canonicalization, or the relevant runtime/toolchain inputs change, and before a release if CI has not already produced a deep result for that commit. The dedicated CI workflow reports a quick result for every pull request, runs the census only for relevant diffs, and also runs it nightly and by manual dispatch.
+
 Scripts are established at scaffold; see [`DEVELOPMENT.md`](DEVELOPMENT.md).
 
 ## Private/

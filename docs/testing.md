@@ -51,8 +51,11 @@ Larger corpora of real documents are exercised by downstream applications that c
 ```powershell
 pnpm test
 pnpm conformance:check
+pnpm conformance:check:deep
 pnpm conformance:deep
 ```
 
 Unit tests are colocated as `*.test.ts`; cross-package differential and negative-specification suites live under `tests/`.
-The ordinary test command runs the default conformance tier. `conformance:deep` adds the exhaustive length-five UTF-8 class census.
+The ordinary test command runs the default conformance tier: every explicit family, the 346,200 UTF-8 class sequences through length four, and the seeded random census. `conformance:check` regenerates default-tier fixture content and validates the retained deep digest header and count without recomputing its value.
+
+`conformance:deep` concurrently recomputes all fixture digests and checks the 7,962,624 length-five UTF-8 class sequences against the oracle and source implementation. It shards source validation across a bounded number of processes; `TEXDIG_CONFORMANCE_WORKERS` overrides that count for diagnosis. The dedicated Ubuntu workflow reports a result for every pull request, but runs the census only when UTF-8 or conformance inputs change; unrelated changes exit after a repository diff. It also runs nightly on `main`, on relevant `main` pushes, on version tags, and on manual request. A release requires a deep result for the release commit.

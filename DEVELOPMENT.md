@@ -32,8 +32,9 @@ pnpm typecheck                   # tsc -b (source projects) + tsc -p tsconfig.te
 pnpm lint
 pnpm format:check                # prettier --check .  (pnpm format to write)
 pnpm test                        # vitest run   (pnpm test:watch, pnpm test:coverage)
-pnpm conformance:check           # regenerate source/region fixture expectations and require zero difference
-pnpm conformance:deep            # add the exhaustive deep conformance census
+pnpm conformance:check           # regenerate default-tier expectations and validate retained deep metadata
+pnpm conformance:check:deep      # regenerate every expectation, including deep digests
+pnpm conformance:deep            # full deep regeneration and sharded length-five source census
 pnpm build                       # tsc -b — emits dist/ per package (ESM, .d.ts, source maps)
 pnpm pack-check                  # publint + arethetypeswrong on the built packages
 pnpm tools:verify                # check external executables against tools/tools.json
@@ -56,7 +57,7 @@ texdig/
 ├── tsconfig.tests.json          # no-emit project covering tests, scripts, and config files
 ├── eslint.config.ts  vitest.config.ts  .prettierrc.json  .prettierignore  .editorconfig  .gitattributes
 ├── .changeset/                  # changesets configuration and pending change entries
-├── .github/workflows/ci.yml
+├── .github/workflows/ci.yml  conformance-deep.yml
 ├── NOTICE                       # third-party attribution (unified-latex, latex-utensils)
 ├── patches/                     # `pnpm patch` output, committed — only if a dependency ever needs one
 ├── docs/                        # project documentation
@@ -113,7 +114,8 @@ Unit tests are colocated as `*.test.ts` beside the module they cover and are exc
 ### Fixtures
 
 - `fixtures/**` is byte-exact. `.gitattributes` marks it `-text` (no line-ending normalization), `.editorconfig` unsets whitespace rules for it, and `.prettierignore` excludes it from formatting.
-- `fixtures/conformance/README.md` defines the language-neutral line format. `pnpm conformance:generate` regenerates the source and region families, `pnpm conformance:check` verifies a zero-difference regeneration, and `pnpm conformance:deep` runs the exhaustive deep census in addition to the default test tier.
+- `fixtures/conformance/README.md` defines the language-neutral line format. `pnpm conformance:generate` regenerates every source and region family. `pnpm conformance:check` performs the routine zero-difference check without recomputing deep digests, while still validating each retained deep header and census count. `pnpm conformance:check:deep` recomputes every digest. `pnpm conformance:deep` runs that full check concurrently with a sharded exhaustive source census; set `TEXDIG_CONFORMANCE_WORKERS` to a positive integer to override its bounded automatic worker count.
+- Routine CI runs the default tier on Windows and Ubuntu. The Ubuntu-only deep workflow reports a result for every pull request so it can be required, but it installs dependencies and runs the census only when UTF-8 decoding or conformance machinery changes; unrelated pull requests exit after the diff check. It also runs nightly on `main`, on relevant `main` pushes, on version tags, and by manual dispatch. A manual deep run is required before publishing a release when the tagged commit has not already passed it.
 
 ### External executables
 

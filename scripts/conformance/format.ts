@@ -53,12 +53,21 @@ export function digestRows(rows: Iterable<string>): {
   readonly count: number;
 } {
   const hash = createHash("sha256");
+  const pending: string[] = [];
+  let pendingLength = 0;
   let count = 0;
   for (const text of rows) {
-    hash.update(text);
-    hash.update("\n");
+    const line = `${text}\n`;
+    pending.push(line);
+    pendingLength += line.length;
+    if (pendingLength >= 256 * 1024) {
+      hash.update(pending.join(""));
+      pending.length = 0;
+      pendingLength = 0;
+    }
     count++;
   }
+  if (pending.length > 0) hash.update(pending.join(""));
   return { value: hash.digest("hex"), count };
 }
 

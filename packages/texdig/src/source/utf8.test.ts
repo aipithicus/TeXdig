@@ -1,15 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { CLASS_REPRESENTATIVES, fatalScalars } from "../../../../scripts/conformance/oracles.ts";
-import { XorShift32 } from "../../../../scripts/conformance/prng.ts";
+import { fatalScalars } from "../../../../scripts/conformance/oracles.ts";
 import { type Utf8Units, decodeUtf8, listUnits, unitAt } from "./utf8.js";
 
 function bytes(...values: number[]): Uint8Array {
   return Uint8Array.from(values);
-}
-
-function hex(input: Uint8Array): string {
-  return Array.from(input, (b) => b.toString(16).padStart(2, "0")).join(" ");
 }
 
 /** `[start, end, valid, value]` per unit, for compact expectations. */
@@ -106,31 +101,6 @@ function checkLaws(input: Uint8Array): Utf8Units {
   return decodeUtf8(input);
 }
 
-/**
- * Prefix stability: a unit whose start leaves room for a full four-byte sequence
- * inside the prefix is decided identically with or without the suffix.
- */
-function prefixInstability(input: Uint8Array): string | undefined {
-  if (input.length < 5) {
-    return undefined;
-  }
-  const prefix = input.subarray(0, input.length - 1);
-  const stableBound = prefix.length - 4;
-  const full = flat(decodeUtf8(input)).filter(([start]) => start <= stableBound);
-  const partial = flat(decodeUtf8(prefix)).filter(([start]) => start <= stableBound);
-  if (full.length !== partial.length) {
-    return "unit count differs on the stable prefix";
-  }
-  for (let i = 0; i < full.length; i++) {
-    const a = full[i];
-    const b = partial[i];
-    if (a === undefined || b === undefined || a.some((v, k) => v !== b[k])) {
-      return `unit ${String(i)} differs on the stable prefix`;
-    }
-  }
-  return undefined;
-}
-
 describe("decodeUtf8 named cases", () => {
   it("decodes empty input to zero units", () => {
     const units = checkLaws(bytes());
@@ -222,67 +192,5 @@ describe("decodeUtf8 named cases", () => {
   });
 });
 
-/**
- * Both boundary bytes of every class in the Unicode well-formed byte-sequence
- * table. A decoder that is correct on these representatives is correct on every
- * byte, because the table's decisions depend only on the class.
- */
-const CENSUS_TIMEOUT_MS = 60_000;
-
-describe("decodeUtf8 exhaustive class census", () => {
-  it(
-    "satisfies the laws and the oracle on every class sequence up to length four",
-    () => {
-      const reps = CLASS_REPRESENTATIVES;
-      const base = reps.length;
-      const buffer = new Uint8Array(4);
-      const failures: string[] = [];
-      let sequences = 0;
-      for (let length = 1; length <= 4; length++) {
-        const total = base ** length;
-        for (let code = 0; code < total; code++) {
-          let rest = code;
-          for (let position = 0; position < length; position++) {
-            buffer[position] = reps[rest % base] ?? 0;
-            rest = Math.floor(rest / base);
-          }
-          const input = buffer.subarray(0, length);
-          const violation = firstViolation(input);
-          if (violation !== undefined && failures.length < 8) {
-            failures.push(`${hex(input)}: ${violation}`);
-          }
-          sequences++;
-        }
-      }
-      expect(failures).toEqual([]);
-      expect(sequences).toBe(base + base ** 2 + base ** 3 + base ** 4);
-    },
-    CENSUS_TIMEOUT_MS,
-  );
-});
-
-describe("decodeUtf8 seeded random census", () => {
-  it(
-    "satisfies the laws, the oracle, and prefix stability on longer inputs",
-    () => {
-      const random = new XorShift32(0x9e37_79b9);
-      const next = (): number => random.next();
-      const reps = CLASS_REPRESENTATIVES;
-      const failures: string[] = [];
-      for (let round = 0; round < 5000; round++) {
-        const length = 5 + (next() % 12);
-        const input = new Uint8Array(length);
-        const fromClasses = round % 2 === 0;
-        for (let k = 0; k < length; k++) {
-          input[k] = fromClasses ? (reps[next() % reps.length] ?? 0) : next() % 256;
-        }
-        const violation = firstViolation(input) ?? prefixInstability(input);
-        if (violation !== undefined && failures.length < 8) {
-          failures.push(`${hex(input)}: ${violation}`);
-        }
-      }
-      expect(failures).toEqual([]);
-    },
-    CENSUS_TIMEOUT_MS,
-  );
-});
+// The exhaustive class and seeded random populations are owned by
+// tests/conformance.test.ts so the ordinary suite enumerates each census once.

@@ -5,6 +5,10 @@ on:
     branches: [main]
   pull_request:
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     strategy:
@@ -33,8 +37,6 @@ jobs:
       - run: pnpm format:check
       - run: pnpm test
       - run: pnpm conformance:check
-      - if: runner.os == 'Linux'
-        run: pnpm conformance:deep
       - run: pnpm build
       - run: pnpm pack-check
       - run: pnpm tools:verify

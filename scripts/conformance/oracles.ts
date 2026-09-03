@@ -74,8 +74,10 @@ export function decodeUtf8Oracle(input: Uint8Array): readonly OracleUnit[] {
   return units;
 }
 
-export function utf8OracleViolation(input: Uint8Array): string | undefined {
-  const units = decodeUtf8Oracle(input);
+export function utf8OracleViolation(
+  input: Uint8Array,
+  units: readonly OracleUnit[] = decodeUtf8Oracle(input),
+): string | undefined {
   let cursor = 0;
   const scalars: number[] = [];
   for (const unit of units) {
@@ -108,11 +110,14 @@ export function utf8OracleViolation(input: Uint8Array): string | undefined {
   return undefined;
 }
 
-export function utf8PrefixViolation(input: Uint8Array): string | undefined {
+export function utf8PrefixViolation(
+  input: Uint8Array,
+  fullUnits: readonly OracleUnit[] = decodeUtf8Oracle(input),
+): string | undefined {
   if (input.length < 5) return undefined;
   const prefix = input.subarray(0, input.length - 1);
   const stableBound = prefix.length - 4;
-  const full = decodeUtf8Oracle(input).filter((unit) => unit.start <= stableBound);
+  const full = fullUnits.filter((unit) => unit.start <= stableBound);
   const partial = decodeUtf8Oracle(prefix).filter((unit) => unit.start <= stableBound);
   if (full.length !== partial.length) return "U2 prefix stability";
   for (let index = 0; index < full.length; index++) {
@@ -129,8 +134,10 @@ export function utf8PrefixViolation(input: Uint8Array): string | undefined {
   return undefined;
 }
 
-export function utf8Row(input: Uint8Array): string {
-  const units = decodeUtf8Oracle(input);
+export function utf8Row(
+  input: Uint8Array,
+  units: readonly OracleUnit[] = decodeUtf8Oracle(input),
+): string {
   const tokens =
     units.length === 0
       ? "U:-"

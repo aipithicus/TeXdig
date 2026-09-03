@@ -30,7 +30,7 @@ export function buildUtf8Named(): GeneratedFamily {
         ["convention", "atoms"],
         ["laws", "U1 U3 U4"],
       ],
-      rows: UTF8_NAMED_INPUTS.map(utf8Row),
+      rows: UTF8_NAMED_INPUTS.map((input) => utf8Row(input)),
     }),
   };
 }

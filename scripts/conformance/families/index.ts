@@ -8,10 +8,10 @@ import { buildUtf8Classes } from "./utf8-classes.ts";
 import { buildUtf8Named } from "./utf8-named.ts";
 import { buildUtf8Random } from "./utf8-random.ts";
 
-export function buildFamilies(): readonly GeneratedFamily[] {
+export function buildFamilies(includeDeep = true): readonly GeneratedFamily[] {
   return [
     buildUtf8Named(),
-    buildUtf8Classes(),
+    buildUtf8Classes(includeDeep),
     buildUtf8Random(),
     buildSpanPredicates(),
     buildTopologyLines(),

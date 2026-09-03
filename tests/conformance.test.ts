@@ -3,7 +3,11 @@ import { resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { classInputs } from "../scripts/conformance/families/utf8-classes.ts";
+import {
+  classInputCount,
+  classInputRange,
+  classInputs,
+} from "../scripts/conformance/families/utf8-classes.ts";
 import { randomUtf8Rows } from "../scripts/conformance/families/utf8-random.ts";
 import { lineRows } from "../scripts/conformance/families/topology-lines.ts";
 import { randomConversionRows } from "../scripts/conformance/families/topology-conversions.ts";
@@ -82,9 +86,10 @@ function checkUtf8Rows(
   function* checked(): Generator<string> {
     for (const expected of rows) {
       const input = decodeBytes(expected.split(" ; ")[0] ?? "");
-      const oracleProblem = utf8OracleViolation(input);
+      const oracleUnits = decodeUtf8Oracle(input);
+      const oracleProblem = utf8OracleViolation(input, oracleUnits);
       if (oracleProblem !== undefined) throw new Error(`${expected}: ${oracleProblem}`);
-      const prefixProblem = checkPrefix ? utf8PrefixViolation(input) : undefined;
+      const prefixProblem = checkPrefix ? utf8PrefixViolation(input, oracleUnits) : undefined;
       if (prefixProblem !== undefined) throw new Error(`${expected}: ${prefixProblem}`);
       const actual = sourceUtf8Row(input);
       if (actual !== expected)
@@ -95,40 +100,86 @@ function checkUtf8Rows(
   return digestRows(checked());
 }
 
+function validateClassInput(
+  input: Uint8Array,
+  checkPrefix: boolean,
+): ReturnType<typeof decodeUtf8Oracle> {
+  const expected = decodeUtf8Oracle(input);
+  const describeInput = (): string => utf8Row(input, expected);
+  const oracleProblem = utf8OracleViolation(input, expected);
+  if (oracleProblem !== undefined) throw new Error(`${describeInput()}: ${oracleProblem}`);
+  const prefixProblem = checkPrefix ? utf8PrefixViolation(input, expected) : undefined;
+  if (prefixProblem !== undefined) throw new Error(`${describeInput()}: ${prefixProblem}`);
+  const actual = decodeUtf8(input);
+  let invalidCount = 0;
+  for (const unit of expected) if (!unit.valid) invalidCount++;
+  const hasBom = input.length >= 3 && input[0] === 0xef && input[1] === 0xbb && input[2] === 0xbf;
+  if (
+    actual.byteLength !== input.length ||
+    actual.count !== expected.length ||
+    actual.invalidCount !== invalidCount ||
+    actual.hasBom !== hasBom ||
+    actual.starts.length !== expected.length + 1 ||
+    actual.values.length !== expected.length ||
+    actual.valid.length !== expected.length
+  ) {
+    throw new Error(`fixture/source decoder summary disagreement: ${describeInput()}`);
+  }
+  for (let index = 0; index < expected.length; index++) {
+    const unit = expected[index];
+    if (
+      unit === undefined ||
+      actual.starts[index] !== unit.start ||
+      actual.starts[index + 1] !== unit.end ||
+      actual.valid[index] !== (unit.valid ? 1 : 0) ||
+      actual.values[index] !== unit.value
+    ) {
+      throw new Error(`fixture/source decoder unit disagreement: ${describeInput()}`);
+    }
+  }
+  return expected;
+}
+
 function checkClassRows(
   length: number,
   checkPrefix: boolean,
 ): { readonly value: string; readonly count: number } {
   function* checked(): Generator<string> {
     for (const input of classInputs(length)) {
-      const oracleProblem = utf8OracleViolation(input);
-      if (oracleProblem !== undefined) throw new Error(`${utf8Row(input)}: ${oracleProblem}`);
-      const prefixProblem = checkPrefix ? utf8PrefixViolation(input) : undefined;
-      if (prefixProblem !== undefined) throw new Error(`${utf8Row(input)}: ${prefixProblem}`);
-      const expected = decodeUtf8Oracle(input);
-      const actual = decodeUtf8(input);
-      if (
-        actual.count !== expected.length ||
-        actual.invalidCount !== expected.filter((unit) => !unit.valid).length
-      ) {
-        throw new Error(`fixture/source decoder count disagreement: ${utf8Row(input)}`);
-      }
-      for (let index = 0; index < expected.length; index++) {
-        const unit = expected[index];
-        if (
-          unit === undefined ||
-          actual.starts[index] !== unit.start ||
-          actual.starts[index + 1] !== unit.end ||
-          actual.valid[index] !== (unit.valid ? 1 : 0) ||
-          actual.values[index] !== unit.value
-        ) {
-          throw new Error(`fixture/source decoder unit disagreement: ${utf8Row(input)}`);
-        }
-      }
-      yield utf8Row(input);
+      const expected = validateClassInput(input, checkPrefix);
+      yield utf8Row(input, expected);
     }
   }
   return digestRows(checked());
+}
+
+function checkClassRange(
+  length: number,
+  startCode: number,
+  endCode: number,
+  checkPrefix: boolean,
+): number {
+  let count = 0;
+  for (const input of classInputs(length, startCode, endCode)) {
+    validateClassInput(input, checkPrefix);
+    count++;
+  }
+  return count;
+}
+
+function environmentInteger(name: string, fallback: number): number {
+  const text = process.env[name];
+  if (text === undefined) return fallback;
+  const value = Number(text);
+  if (!Number.isSafeInteger(value) || value < 0)
+    throw new RangeError(`${name} must be a non-negative safe integer`);
+  return value;
+}
+
+function deepShard(): ReturnType<typeof classInputRange> {
+  const count = environmentInteger("TEXDIG_CONFORMANCE_SHARD_COUNT", 1);
+  const index = environmentInteger("TEXDIG_CONFORMANCE_SHARD_INDEX", 0);
+  return classInputRange(5, index, count);
 }
 
 function expectDigest(
@@ -155,6 +206,19 @@ describe("conformance format", () => {
     expect(() =>
       parseFixture("# family: test/bad\n# schema: 2\n# generator: x\n- ; X:0\n"),
     ).toThrow(/unsupported conformance schema/);
+  });
+
+  it("partitions the deep class census without gaps or overlap", () => {
+    const shards = 7;
+    let cursor = 0;
+    for (let index = 0; index < shards; index++) {
+      const range = classInputRange(5, index, shards);
+      expect(range.startCode).toBe(cursor);
+      expect(range.endCode).toBeGreaterThan(range.startCode);
+      cursor = range.endCode;
+    }
+    expect(cursor).toBe(classInputCount(5));
+    expect(() => classInputRange(5, shards, shards)).toThrow(RangeError);
   });
 });
 
@@ -190,9 +254,11 @@ describe("UTF-8 conformance", () => {
 });
 
 describe.skipIf(process.env.TEXDIG_CONFORMANCE_DEEP !== "1")("deep UTF-8 conformance", () => {
-  it("re-enumerates the length-five class digest", () => {
-    const digest = header(fixture("utf8/classes.txt"), "digest")[4] ?? "";
-    expectDigest(digest, checkClassRows(5, true));
+  it("validates its assigned length-five class shard", () => {
+    const shard = deepShard();
+    expect(checkClassRange(5, shard.startCode, shard.endCode, true)).toBe(
+      shard.endCode - shard.startCode,
+    );
   }, 900_000);
 });
 

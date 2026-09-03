@@ -1,0 +1,86 @@
+name: Deep conformance
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 9 * * *"
+  pull_request:
+  push:
+    branches: [main]
+    tags: ["v*"]
+
+concurrency:
+  group: deep-conformance-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Detect deep-conformance inputs
+        id: changes
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BASE: ${{ github.event.before }}
+          REF_TYPE: ${{ github.ref_type }}
+        run: |
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            range="$PR_BASE...$PR_HEAD"
+          elif [[ "$EVENT_NAME" == "push" && "$REF_TYPE" != "tag" ]]; then
+            range="$PUSH_BASE..$GITHUB_SHA"
+          else
+            echo "required=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if git diff --quiet "$range" -- \
+            .github/workflows/conformance-deep.yml \
+            .node-version \
+            fixtures/conformance/README.md \
+            fixtures/conformance/utf8/classes.txt \
+            package.json \
+            packages/texdig/src/source/span.ts \
+            packages/texdig/src/source/utf8.ts \
+            pnpm-lock.yaml \
+            pnpm-workspace.yaml \
+            scripts/conformance \
+            scripts/generate-conformance.ts \
+            scripts/run-conformance-deep.ts \
+            tests/conformance.test.ts \
+            tsconfig.base.json \
+            tsconfig.tests.json \
+            vitest.config.ts
+          then
+            echo "required=false" >> "$GITHUB_OUTPUT"
+          else
+            status=$?
+            if [[ $status -ne 1 ]]; then
+              exit "$status"
+            fi
+            echo "required=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: pnpm/action-setup@v6
+        if: steps.changes.outputs.required == 'true'
+        # version is read from the packageManager field in package.json
+
+      - uses: actions/setup-node@v7
+        if: steps.changes.outputs.required == 'true'
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - if: steps.changes.outputs.required == 'true'
+        run: pnpm install --frozen-lockfile
+      - if: steps.changes.outputs.required == 'true'
+        run: pnpm conformance:deep
+      - if: steps.changes.outputs.required != 'true'
+        run: echo "Deep conformance is unchanged; the routine suite is authoritative for this diff."
