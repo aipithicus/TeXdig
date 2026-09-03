@@ -57,4 +57,4 @@ The HTML tree is the convergence point for projections: additional source lanes 
 
 TeXdig synthesizes the capabilities of **unified-latex** (record-driven argument binding, macro expansion, sub-language grammars, conversion pipelines) and **latex-utensils** (position-faithful typed syntax, strict parsing, bibliography and log grammars). The two descend from one ancestral PEG grammar; both are MIT-licensed, and attribution is recorded in `NOTICE`. Their outputs and test suites serve as comparison oracles.
 
-The substrate's separation of location, occurrence, structure, derivation, provenance, and output follows the ontology of the **Doccer** interval-algebra engine. Doccer is a specification reference and a conformance oracle for shared fixtures, not a dependency.
+The substrate's separation of location, occurrence, structure, derivation, provenance, and output follows the ontology of the **Doccer** interval-algebra engine. Doccer is a specification reference, not a dependency: the fixture families are language-neutral so it can consume them, but the engine verifies its own work and neither project gates the other.
