@@ -4,7 +4,7 @@ import {
   SCHEMA,
   digestHeader,
   digestRows,
-  encodeBytes,
+  inputFields,
   row,
   serializeFixture,
 } from "../format.ts";
@@ -32,7 +32,7 @@ export function* lineRows(maximumPieces: number, exactPieces = false): Generator
         return `${String(line)}/${String(column)}/${String(column)}/${String(column)}`;
       });
       yield row([
-        encodeBytes(input),
+        ...inputFields(input),
         `L:${starts.join(",")}`,
         `I:${indexes.join(",")}`,
         `P:${positions.join(",")}`,

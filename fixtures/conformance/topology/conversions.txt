@@ -5,9 +5,9 @@
 # seed: 0xC0162026
 # rule: 1000 inputs; length next()%33; each byte next()%256
 # laws: C1 C2
-# digest: sha256:e9e13f1945d9728534b5f333f768ec30d22eabf2fb128f9a53ebb128fa63d788 canon:rows-v1 count:1000 tier:default
+# digest: sha256:4f175c6f807b5c94d410ee1a0f609e0d42656b80e0990950197523e16528cf16 canon:rows-v1 count:1000 tier:default
 
-- ; B:0/0/0
-41 C3 A9 0A F0 9F 98 80 80 ; B:0/0/0,1/1/1,3/2/2,4/3/3,8/5/4,9/6/5
-E2 82 41 ; B:0/0/0,1/1/1,2/2/2,3/3/3
-EF BB BF EF BF BD ; B:0/0/0,3/1/1,6/2/2
+- ; E:utf-8 ; B:0/0/0
+41 C3 A9 0A F0 9F 98 80 80 ; E:utf-8 ; B:0/0/0,1/1/1,3/2/2,4/3/3,8/5/4,9/6/5
+E2 82 41 ; E:utf-8 ; B:0/0/0,1/1/1,2/2/2,3/3/3
+EF BB BF EF BF BD ; E:utf-8 ; B:0/0/0,3/1/1,6/2/2

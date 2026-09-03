@@ -4,17 +4,22 @@
 # convention: atoms
 # laws: U1 U3 U4
 
-- ; U:- ; N:0 ; M:0
-41 ; U:0-1:S:41 ; N:0 ; M:0
-C3 A9 ; U:0-2:S:E9 ; N:0 ; M:0
-F0 9F 98 80 ; U:0-4:S:1F600 ; N:0 ; M:0
-80 ; U:0-1:I:80 ; N:1 ; M:0
-E9 41 ; U:0-1:I:E9,1-2:S:41 ; N:1 ; M:0
-E2 82 41 ; U:0-1:I:E2,1-2:I:82,2-3:S:41 ; N:2 ; M:0
-E2 82 ; U:0-1:I:E2,1-2:I:82 ; N:2 ; M:0
-C0 80 ; U:0-1:I:C0,1-2:I:80 ; N:2 ; M:0
-ED A0 80 ; U:0-1:I:ED,1-2:I:A0,2-3:I:80 ; N:3 ; M:0
-F4 90 80 80 ; U:0-1:I:F4,1-2:I:90,2-3:I:80,3-4:I:80 ; N:4 ; M:0
-F0 9F 98 80 ; U:0-4:S:1F600 ; N:0 ; M:0
-EF BB BF ; U:0-3:S:FEFF ; N:0 ; M:1
-EF BF BD ; U:0-3:S:FFFD ; N:0 ; M:0
+- ; E:utf-8 ; U:- ; N:0 ; M:0
+41 ; E:utf-8 ; U:0-1:S:41 ; N:0 ; M:0
+C3 A9 ; E:utf-8 ; U:0-2:S:E9 ; N:0 ; M:0
+E2 82 AC ; E:utf-8 ; U:0-3:S:20AC ; N:0 ; M:0
+F0 9F 98 80 ; E:utf-8 ; U:0-4:S:1F600 ; N:0 ; M:0
+7F DF BF EF BF BF F4 8F BF BF ; E:utf-8 ; U:0-1:S:7F,1-3:S:7FF,3-6:S:FFFF,6-10:S:10FFFF ; N:0 ; M:0
+EF BB BF 41 ; E:utf-8 ; U:0-3:S:FEFF,3-4:S:41 ; N:0 ; M:1
+41 EF BB BF ; E:utf-8 ; U:0-1:S:41,1-4:S:FEFF ; N:0 ; M:0
+80 ; E:utf-8 ; U:0-1:I:80 ; N:1 ; M:0
+E9 41 ; E:utf-8 ; U:0-1:I:E9,1-2:S:41 ; N:1 ; M:0
+E2 82 41 ; E:utf-8 ; U:0-1:I:E2,1-2:I:82,2-3:S:41 ; N:2 ; M:0
+E2 82 ; E:utf-8 ; U:0-1:I:E2,1-2:I:82 ; N:2 ; M:0
+C0 80 ; E:utf-8 ; U:0-1:I:C0,1-2:I:80 ; N:2 ; M:0
+E0 80 80 ; E:utf-8 ; U:0-1:I:E0,1-2:I:80,2-3:I:80 ; N:3 ; M:0
+ED A0 80 ; E:utf-8 ; U:0-1:I:ED,1-2:I:A0,2-3:I:80 ; N:3 ; M:0
+F4 90 80 80 ; E:utf-8 ; U:0-1:I:F4,1-2:I:90,2-3:I:80,3-4:I:80 ; N:4 ; M:0
+F5 FF C1 ; E:utf-8 ; U:0-1:I:F5,1-2:I:FF,2-3:I:C1 ; N:3 ; M:0
+EF BB BF ; E:utf-8 ; U:0-3:S:FEFF ; N:0 ; M:1
+EF BF BD ; E:utf-8 ; U:0-3:S:FFFD ; N:0 ; M:0

@@ -4,7 +4,7 @@ import {
   SCHEMA,
   digestHeader,
   digestRows,
-  encodeBytes,
+  inputFields,
   row,
   serializeFixture,
 } from "../format.ts";
@@ -24,7 +24,7 @@ export function conversionRow(input: Uint8Array): string {
   const boundaries = topologyBoundaries(input).map(
     ([byte, utf16, atom]) => `${String(byte)}/${String(utf16)}/${String(atom)}`,
   );
-  return row([encodeBytes(input), `B:${boundaries.join(",")}`]);
+  return row([...inputFields(input), `B:${boundaries.join(",")}`]);
 }
 
 export function* randomConversionRows(): Generator<string> {

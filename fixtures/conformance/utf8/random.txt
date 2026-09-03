@@ -5,4 +5,4 @@
 # seed: 0x9E3779B9
 # rule: 5000 sequences; length is 5 + next()%12; even cases choose each byte from the class representatives, odd cases use next()%256
 # laws: U1 U2 U3 U4
-# digest: sha256:040038bfabe1e968bda2b7744e64a04f504faa1f343b95dd9b30136dce57b8ab canon:rows-v1 count:5000 tier:default
+# digest: sha256:55990059df089419cf716b41eaf291671bfbd94a98d9f162196c1e01fd914f1c canon:rows-v1 count:5000 tier:default

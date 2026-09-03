@@ -5,4 +5,4 @@
 # seed: 0x51CE2026
 # rule: 500 inputs; length next()%25; bytes next()%256; atom-bounded outer and nested windows chosen by subsequent outputs
 # laws: L1 L2 L3
-# digest: sha256:86b670da25e93903334f16bf0b39d5bed875a1556d14348497f9da0c92661172 canon:rows-v1 count:500 tier:default
+# digest: sha256:aed144ee1b7db586ccb695f6dd2b1a4eaff0d5af4df361c12b09ddee397f27d9 canon:rows-v1 count:500 tier:default

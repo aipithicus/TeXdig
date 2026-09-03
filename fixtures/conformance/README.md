@@ -4,7 +4,7 @@ This file is the single normative description of the conformance fixture contain
 
 ## File grammar
 
-Files are UTF-8 text. A file consists of header lines followed by zero or more rows. Blank lines are ignored. `#` begins a comment anywhere on a line. A header has the exact form `# key: value`; header keys are lowercase ASCII and may repeat only where stated. Consumers reject an unknown `schema`.
+Files are UTF-8 text. A file consists of header lines followed by zero or more rows. Blank lines are ignored. `#` begins a comment anywhere on a row. A header has the exact form `# key: value`; after that leading `# `, another `#` begins an inline comment. Other lines beginning with `#` are comments. Header keys are lowercase ASCII. Only `digest` may repeat; all other headers are singletons. Consumers reject missing or malformed required headers and an unknown `schema`.
 
 Required headers are `family` (`group/name`), `schema` (`1`), and `generator` (`texdig-conformance 0.0.0`). `convention` is required whenever derived offsets occur and is `atoms` in this corpus. `seed` is a non-zero hexadecimal uint32 for random families. `rule` states census enumeration in plain text. `laws` is a space-separated list of law identifiers. Each census has one or more `digest` headers:
 
@@ -12,11 +12,12 @@ Required headers are `family` (`group/name`), `schema` (`1`), and `generator` (`
 # digest: sha256:<64 lowercase hex digits> canon:rows-v1 count:<decimal cases> tier:<default|deep>
 ```
 
-Rows contain two or more fields separated by exactly ` ; `. Field one is the input bytes as uppercase hexadecimal pairs separated by one space, or `-` for empty input. Family fields are defined below. Decimal integers have no sign or leading padding. A span is half-open and written `[a,b)`. Lists are comma-separated; `-` denotes an empty list where a prefixed list token requires a value.
+Rows contain three or more fields separated by exactly ` ; `. Field one is the input bytes as uppercase hexadecimal pairs separated by one space, or `-` for empty input. Field two is the declared encoding as `E:<label>`; labels are non-empty ASCII encoding names made from letters, digits, `.`, `_`, `+`, and `-`. Every fixture in this corpus uses `E:utf-8`. The declaration is recorded metadata and never licenses transcoding, normalization, or replacement of the input bytes. Family fields begin at field three and are defined below. Decimal integers have no sign or leading padding. A span is half-open and written `[a,b)`. Lists are comma-separated; `-` denotes an empty list where a prefixed list token requires a value.
 
 ## Shared token vocabulary
 
 - Decoder unit: `start-end:S:HEX` for a well-formed scalar or `start-end:I:HEX` for one preserved invalid byte. `HEX` is uppercase without padding.
+- Declared encoding: `E:<label>`.
 - Decoder result: `U:<units>`; invalid count: `N:<decimal>`; leading BOM flag: `M:0|1`.
 - Line starts: `L:0,4,9`; per-offset line indexes: `I:0,0,1`; line/column positions: `P:line/byteCol/atomCol/utf16Col,...`.
 - Coordinate boundary: `B:byte/utf16/atom`; repeated boundaries are comma-separated.
@@ -65,11 +66,12 @@ The classes from Unicode Table 3-7 are: ASCII `00-7F`; continuations `80-8F`, `9
 
 ## Family fields and enumeration
 
-- `utf8/named`: `bytes ; U:<units> ; N:<invalidCount> ; M:<bom>`. Rows are named adversarial and boundary cases.
+- Every row begins `bytes ; E:<declaredEncoding>`. The suffixes below start with field three.
+- `utf8/named`: `U:<units> ; N:<invalidCount> ; M:<bom>`. Rows are the union of the decoder's named adversarial and scalar-boundary cases, without duplicates.
 - `utf8/classes`: the same fields. For each length, enumerate base-24 codes from zero upward; position zero receives the least-significant digit. Length-one rows are explicit. Digest headers are ordered for lengths one through five; lengths one through four are default and length five is deep.
 - `utf8/random`: the same canonical row, digest-only. Generate 5,000 cases. Length is `5 + next()%12`; even-numbered cases choose each byte from the 24 representatives and odd-numbered cases use `next()%256`.
-- `span/predicates`: `bytes ; A:[a,b) ; B:[c,d) ; C:<contains> ; Q:<properlyContains> ; I:<intersects> ; X:<crosses>`. The five zero input bytes are a carrier with six boundaries. Enumerate each span start-major/end-major, left span outermost.
-- `topology/lines`: `bytes ; L:<starts> ; I:<lineIndex per offset> ; P:<position per offset>`. Recursively visit the current input before appending each of `A`, `CR`, `LF`, `CRLF`. Rows through four pieces are explicit; the digest covers exactly five pieces.
-- `topology/conversions`: `bytes ; B:<boundaries>`. Each boundary is byte/UTF-16/atom under `atoms`. Named rows are explicit. The 1,000-row census uses `length=next()%33`, then `next()%256` per byte.
-- `snapshot/identity`: hash vector rows are `bytes ; V:<sha256>`. Compatibility rows are `leftBytes ; A:<sourceId>/<revision> ; R:<rightBytes>|<sourceId>|<revision> ; K:<compatible>`. The digest census rows are `carrier ; M:<mutatedIndex> ; C:<fingerprintChanged>` for xor-FF at indices 0 through 31.
-- `slice/laws`: canonical digest rows are `bytes ; W:[parentStart,parentEnd) ; C:<childBytes> ; N:[childStart,childEnd)>[parentStart,parentEnd) ; O:<outsideExists>`. Generate 500 inputs using the stated seed and rule; all chosen boundaries come from the reference decoder's atoms.
+- `span/predicates`: `A:[a,b) ; B:[c,d) ; C:<contains> ; Q:<properlyContains> ; I:<intersects> ; X:<crosses>`. The five zero input bytes are a carrier with six boundaries. Enumerate each span start-major/end-major, left span outermost.
+- `topology/lines`: `L:<starts> ; I:<lineIndex per offset> ; P:<position per offset>`. Recursively visit the current input before appending each of `A`, `CR`, `LF`, `CRLF`. Rows through four pieces are explicit; the digest covers exactly five pieces.
+- `topology/conversions`: `B:<boundaries>`. Each boundary is byte/UTF-16/atom under `atoms`. Named rows are explicit. The 1,000-row census uses `length=next()%33`, then `next()%256` per byte.
+- `snapshot/identity`: hash vector suffixes are `V:<sha256>`. Compatibility suffixes are `A:<sourceId>/<revision> ; R:<rightBytes>|<rightDeclaredEncoding>|<sourceId>|<revision> ; K:<compatible>`; the right input's declaration is explicit because compatibility ignores decoding metadata and compares only the identity triple. The digest census suffixes are `M:<mutatedIndex> ; C:<fingerprintChanged>` for xor-FF at indices 0 through 31.
+- `slice/laws`: canonical digest suffixes are `W:[parentStart,parentEnd) ; C:<childBytes> ; N:[childStart,childEnd)>[parentStart,parentEnd) ; O:<outsideExists>`. Generate 500 inputs using the stated seed and rule; all chosen boundaries come from the reference decoder's atoms.

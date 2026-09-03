@@ -3,6 +3,10 @@ import { createHash } from "node:crypto";
 export const SCHEMA = "1";
 export const GENERATOR = "texdig-conformance 0.0.0";
 export const CANON = "rows-v1";
+export const DECLARED_ENCODING = "utf-8";
+
+const FAMILY_PATTERN = /^[a-z][a-z0-9-]*\/[a-z][a-z0-9-]*$/;
+const ENCODING_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._+-]*$/;
 
 export interface DigestRecord {
   readonly algorithm: "sha256";
@@ -40,11 +44,34 @@ export function decodeBytes(text: string): Uint8Array {
   return Uint8Array.from(text.split(" "), (pair) => Number.parseInt(pair, 16));
 }
 
+export function encodeDeclaredEncoding(value: string): string {
+  if (!ENCODING_PATTERN.test(value)) {
+    throw new SyntaxError(`invalid declared encoding: ${value}`);
+  }
+  return `E:${value}`;
+}
+
+export function decodeDeclaredEncoding(text: string): string {
+  const match = /^E:(.+)$/.exec(text);
+  const value = match?.[1] ?? "";
+  if (!ENCODING_PATTERN.test(value)) {
+    throw new SyntaxError(`invalid declared encoding field: ${text}`);
+  }
+  return value;
+}
+
+export function inputFields(input: Uint8Array): readonly [string, string] {
+  return [encodeBytes(input), encodeDeclaredEncoding(DECLARED_ENCODING)];
+}
+
 export function row(fields: readonly string[]): string {
-  if (fields.length < 2 || fields.some((field) => field.length === 0 || field.includes(" ; "))) {
-    throw new TypeError("a row needs at least two non-empty fields without separators");
+  if (fields.length < 3 || fields.some((field) => field.length === 0 || field.includes(";"))) {
+    throw new TypeError(
+      "a row needs input bytes, declared encoding, and at least one result field",
+    );
   }
   decodeBytes(fields[0] ?? "");
+  decodeDeclaredEncoding(fields[1] ?? "");
   return fields.join(" ; ");
 }
 
@@ -110,13 +137,20 @@ export function parseFixture(text: string): ParsedFixture {
   const headers = new Map<string, string[]>();
   const rows: string[][] = [];
   const rowTexts: string[] = [];
-  for (const rawLine of text.replaceAll("\r\n", "\n").split("\n")) {
-    const header = /^# ([a-z][a-z0-9-]*): (.*)$/.exec(rawLine);
-    if (header !== null) {
-      const key = header[1] ?? "";
-      const values = headers.get(key) ?? [];
-      values.push(header[2] ?? "");
-      headers.set(key, values);
+  let sawRow = false;
+  for (const rawLine of text.replace(/\r\n?/g, "\n").split("\n")) {
+    if (rawLine.startsWith("#")) {
+      const headerText = rawLine.startsWith("# ")
+        ? (rawLine.slice(2).split("#", 1)[0]?.trimEnd() ?? "")
+        : "";
+      const header = /^([a-z][a-z0-9-]*): (.+)$/.exec(headerText);
+      if (header !== null) {
+        if (sawRow) throw new SyntaxError("conformance headers must precede rows");
+        const key = header[1] ?? "";
+        const values = headers.get(key) ?? [];
+        values.push(header[2] ?? "");
+        headers.set(key, values);
+      }
       continue;
     }
     const content = rawLine.split("#", 1)[0]?.trim() ?? "";
@@ -124,16 +158,44 @@ export function parseFixture(text: string): ParsedFixture {
       continue;
     }
     const fields = content.split(" ; ");
-    if (fields.length < 2) {
+    if (fields.length < 3 || fields.some((field) => field.length === 0 || field.includes(";"))) {
       throw new SyntaxError(`invalid fixture row: ${rawLine}`);
     }
     decodeBytes(fields[0] ?? "");
+    decodeDeclaredEncoding(fields[1] ?? "");
     rows.push(fields);
     rowTexts.push(content);
+    sawRow = true;
+  }
+
+  for (const [key, values] of headers) {
+    if (key !== "digest" && values.length !== 1) {
+      throw new SyntaxError(`conformance header must not repeat: ${key}`);
+    }
+  }
+
+  const family = headers.get("family");
+  if (family?.length !== 1 || !FAMILY_PATTERN.test(family[0] ?? "")) {
+    throw new SyntaxError(
+      `invalid or missing conformance family: ${family?.join(",") ?? "missing"}`,
+    );
   }
   const schema = headers.get("schema");
   if (schema?.length !== 1 || schema[0] !== SCHEMA) {
     throw new RangeError(`unsupported conformance schema: ${schema?.join(",") ?? "missing"}`);
+  }
+  const generator = headers.get("generator");
+  if (generator?.length !== 1 || generator[0] !== GENERATOR) {
+    throw new SyntaxError(
+      `invalid or missing conformance generator: ${generator?.join(",") ?? "missing"}`,
+    );
+  }
+  for (const digest of headers.get("digest") ?? []) parseDigest(digest);
+  const seed = headers.get("seed")?.[0];
+  if (seed !== undefined) {
+    if (!/^0x[0-9A-Fa-f]{1,8}$/.test(seed) || Number.parseInt(seed.slice(2), 16) === 0) {
+      throw new SyntaxError(`invalid conformance seed: ${seed}`);
+    }
   }
   return { headers, rows, rowTexts };
 }

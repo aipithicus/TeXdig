@@ -1,9 +1,9 @@
-import { GENERATOR, SCHEMA, encodeBytes, row, serializeFixture } from "../format.ts";
+import { GENERATOR, SCHEMA, inputFields, row, serializeFixture } from "../format.ts";
 import { spanPredicates } from "../oracles.ts";
 import type { GeneratedFamily } from "./types.ts";
 
 export function* spanRows(): Generator<string> {
-  const input = encodeBytes(Uint8Array.of(0, 0, 0, 0, 0));
+  const input = inputFields(Uint8Array.of(0, 0, 0, 0, 0));
   for (let aStart = 0; aStart < 6; aStart++) {
     for (let aEnd = aStart; aEnd < 6; aEnd++) {
       for (let bStart = 0; bStart < 6; bStart++) {
@@ -12,7 +12,7 @@ export function* spanRows(): Generator<string> {
             value ? "1" : "0",
           );
           yield row([
-            input,
+            ...input,
             `A:[${String(aStart)},${String(aEnd)})`,
             `B:[${String(bStart)},${String(bEnd)})`,
             `C:${values[0] ?? "0"}`,

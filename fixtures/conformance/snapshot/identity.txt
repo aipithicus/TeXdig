@@ -3,14 +3,14 @@
 # generator: texdig-conformance 0.0.0
 # rule: single-byte xor-FF mutation at each position of the carrier 00 through 1F
 # laws: S1 S2
-# digest: sha256:9c5431e385c5111fd6b730c20e177e6b29834085ac3f10f40e340bc20d3b4a24 canon:rows-v1 count:32 tier:default
+# digest: sha256:a8b143b050e5e24173cf195a7a5a4d6d18476e1dc666f9f6758d3032857db9e3 canon:rows-v1 count:32 tier:default
 
-- ; V:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-61 62 63 ; V:ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad
-00 ; V:6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d
-FF ; V:a8100ae6aa1940d0b663bb31cd466142ebbdbd5187131b92d93818987832eb89
-54 65 58 64 69 67 ; V:2e672e0229ddce400e279f415c3f6be6ee97e3be637857072f8a747e435b4270
-41 0A ; A:a.tex/4 ; R:41 0A|a.tex|4 ; K:1
-41 0A ; A:a.tex/4 ; R:41 0A|b.tex|4 ; K:0
-41 0A ; A:a.tex/4 ; R:41 0A|a.tex|5 ; K:0
-41 0A ; A:a.tex/4 ; R:42 0A|a.tex|4 ; K:0
+- ; E:utf-8 ; V:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+61 62 63 ; E:utf-8 ; V:ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad
+00 ; E:utf-8 ; V:6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d
+FF ; E:utf-8 ; V:a8100ae6aa1940d0b663bb31cd466142ebbdbd5187131b92d93818987832eb89
+54 65 58 64 69 67 ; E:utf-8 ; V:2e672e0229ddce400e279f415c3f6be6ee97e3be637857072f8a747e435b4270
+41 0A ; E:utf-8 ; A:a.tex/4 ; R:41 0A|latin1|a.tex|4 ; K:1
+41 0A ; E:utf-8 ; A:a.tex/4 ; R:41 0A|utf-8|b.tex|4 ; K:0
+41 0A ; E:utf-8 ; A:a.tex/4 ; R:41 0A|utf-8|a.tex|5 ; K:0
+41 0A ; E:utf-8 ; A:a.tex/4 ; R:42 0A|utf-8|a.tex|4 ; K:0

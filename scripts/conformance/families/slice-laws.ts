@@ -5,6 +5,7 @@ import {
   digestHeader,
   digestRows,
   encodeBytes,
+  inputFields,
   row,
   serializeFixture,
 } from "../format.ts";
@@ -29,7 +30,7 @@ export function* sliceRows(): Generator<string> {
     const innerStart = boundaries[innerStartIndex] ?? start;
     const innerEnd = boundaries[innerEndIndex] ?? innerStart;
     yield row([
-      encodeBytes(input),
+      ...inputFields(input),
       `W:[${String(start)},${String(end)})`,
       `C:${encodeBytes(input.slice(start, end))}`,
       `N:[${String(innerStart - start)},${String(innerEnd - start)})>[${String(innerStart)},${String(innerEnd)})`,

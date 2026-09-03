@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-import { encodeBytes, row } from "./format.ts";
+import { inputFields, row } from "./format.ts";
 
 export interface OracleUnit {
   readonly start: number;
@@ -144,7 +144,7 @@ export function utf8Row(
       : `U:${units.map((unit) => `${String(unit.start)}-${String(unit.end)}:${unit.valid ? "S" : "I"}:${unit.value.toString(16).toUpperCase()}`).join(",")}`;
   const invalid = units.filter((unit) => !unit.valid).length;
   const bom = input.length >= 3 && input[0] === 0xef && input[1] === 0xbb && input[2] === 0xbf;
-  return row([encodeBytes(input), tokens, `N:${String(invalid)}`, `M:${bom ? "1" : "0"}`]);
+  return row([...inputFields(input), tokens, `N:${String(invalid)}`, `M:${bom ? "1" : "0"}`]);
 }
 
 export function spanPredicates(
@@ -180,6 +180,16 @@ export function lineIndexOracle(starts: readonly number[], offset: number): numb
   let line = 0;
   while (line + 1 < starts.length && (starts[line + 1] ?? 0) <= offset) line++;
   return line;
+}
+
+export function lineProjectionOracle(
+  starts: readonly number[],
+  start: number,
+  end: number,
+): readonly [number, number] {
+  const first = lineIndexOracle(starts, start);
+  const last = start === end ? first : lineIndexOracle(starts, end - 1);
+  return [first, last + 1];
 }
 
 export function topologyBoundaries(
