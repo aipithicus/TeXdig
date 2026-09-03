@@ -16,7 +16,13 @@
 // none is planned until such a consumer exists.
 import { createHash } from "node:crypto";
 
-import { byteOffset, byteSpan, type ByteOffset, type ByteSpan } from "./span.js";
+import {
+  byteOffset,
+  byteSpan,
+  exactBoundaryIndex,
+  type ByteOffset,
+  type ByteSpan,
+} from "./span.js";
 import { decodeUtf8, type Utf8Units } from "./utf8.js";
 
 /**
@@ -73,7 +79,10 @@ interface SnapshotState {
 }
 
 const STATES = new WeakMap<SourceSnapshot, SnapshotState>();
-const INTERNAL_STATES = new WeakMap<SourceSnapshotOptions, SnapshotState>();
+// Handoff channel from `snapshotView` into the constructor. An entry exists only
+// for an options object minted inside this module, for the duration of one
+// construction, and is removed in a finally block.
+const PENDING_VIEW_STATES = new WeakMap<SourceSnapshotOptions, SnapshotState>();
 
 function stateFor(snapshot: SourceSnapshot): SnapshotState {
   const state = STATES.get(snapshot);
@@ -192,9 +201,12 @@ export class SourceSnapshot {
     assertRevision(options.revision);
     assertDeclaredEncoding(options.declaredEncoding);
 
-    const internalState = INTERNAL_STATES.get(options);
-    const ownedBytes = internalState?.bytes ?? Uint8Array.from(bytes);
-    const utf8 = internalState?.utf8 ?? decodeUtf8(ownedBytes);
+    // A caller-supplied options object never has a pending entry, so a root
+    // snapshot always copies and decodes its own bytes; only a child view minted
+    // by `snapshotView` reuses the parent storage and unit columns.
+    const pendingView = PENDING_VIEW_STATES.get(options);
+    const ownedBytes = pendingView?.bytes ?? Uint8Array.from(bytes);
+    const utf8 = pendingView?.utf8 ?? decodeUtf8(ownedBytes);
     const contentHash = hashBytes(ownedBytes);
     const identity: SourceIdentity = Object.freeze({
       sourceId: options.sourceId,
@@ -277,23 +289,13 @@ export function snapshotUtf8Units(snapshot: SourceSnapshot): Utf8Units {
 }
 
 function exactUnitBoundary(units: Utf8Units, offset: number): number {
-  let low = 0;
-  let high = units.starts.length;
-  while (low < high) {
-    const middle = low + Math.floor((high - low) / 2);
-    const candidate = units.starts[middle] ?? 0;
-    if (candidate < offset) {
-      low = middle + 1;
-    } else {
-      high = middle;
-    }
-  }
-  if (low >= units.starts.length || units.starts[low] !== offset) {
+  const index = exactBoundaryIndex(units.starts, offset);
+  if (index < 0) {
     throw new RangeError(
       `byte offset ${String(offset)} falls inside a valid multi-byte UTF-8 unit`,
     );
   }
-  return low;
+  return index;
 }
 
 function sliceUtf8Units(
@@ -350,10 +352,10 @@ export function snapshotView(
   const bytes = parentState.bytes.subarray(window.start, window.end);
   const utf8 = sliceUtf8Units(parentState.utf8, startIndex, endIndex, bytes);
   const internalOptions: SourceSnapshotOptions = { ...options };
-  INTERNAL_STATES.set(internalOptions, { bytes, utf8 });
+  PENDING_VIEW_STATES.set(internalOptions, { bytes, utf8 });
   try {
     return new SourceSnapshot(bytes, internalOptions);
   } finally {
-    INTERNAL_STATES.delete(internalOptions);
+    PENDING_VIEW_STATES.delete(internalOptions);
   }
 }

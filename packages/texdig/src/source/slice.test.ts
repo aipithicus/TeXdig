@@ -64,7 +64,7 @@ describe("SourceSlice construction", () => {
 
     const topology = SourceTopology.of(slice.child);
     expect(
-      topology.atoms.map((atom) => [atom.span, atom.value, atom.valid, atom.lineIndex]),
+      topology.listAtoms().map((atom) => [atom.span, atom.value, atom.valid, atom.lineIndex]),
     ).toEqual([
       [byteSpan(0, 2), 0xe9, true, 0],
       [byteSpan(2, 3), 0x0a, true, 0],
@@ -181,7 +181,7 @@ function sameSpan(left: ByteSpan, right: ByteSpan): boolean {
 function sliceLawViolation(input: Uint8Array, random: () => number): string | undefined {
   const parent = snapshot(input);
   const topology = SourceTopology.of(parent);
-  const boundaries = [0, ...topology.atoms.map((atom) => atom.span.end)];
+  const boundaries = [0, ...topology.listAtoms().map((atom) => atom.span.end)];
   const startIndex = random() % boundaries.length;
   const endIndex = startIndex + (random() % (boundaries.length - startIndex));
   const windowStart = boundaries[startIndex] ?? 0;

@@ -65,7 +65,7 @@ describe("SourceTopology atoms", () => {
     expect(topology.atomCount).toBe(8);
     expect(topology.utf16Length).toBe(9);
     expect(topology.lineStarts).toEqual([0, 12]);
-    expect(topology.atoms.map(atomTuple)).toEqual([
+    expect(topology.listAtoms().map(atomTuple)).toEqual([
       [0, 3, 0xfeff, true, 0],
       [3, 4, 0x41, true, 0],
       [4, 8, 0x1f600, true, 0],
@@ -77,17 +77,41 @@ describe("SourceTopology atoms", () => {
     ]);
 
     expect(Object.isFrozen(topology)).toBe(true);
-    expect(Object.isFrozen(topology.atoms)).toBe(true);
+    expect(Object.isFrozen(topology.listAtoms())).toBe(true);
     expect(Object.isFrozen(topology.lineStarts)).toBe(true);
     expect(
-      topology.atoms.every((atom) => Object.isFrozen(atom) && Object.isFrozen(atom.span)),
+      topology.listAtoms().every((atom) => Object.isFrozen(atom) && Object.isFrozen(atom.span)),
     ).toBe(true);
+  });
+
+  it("materializes atoms by ordinal on demand and rejects bad ordinals", () => {
+    const topology = SourceTopology.of(snapshot(bytes(0x41, 0xc3, 0xa9, 0x0a, 0x80)));
+
+    expect(topology.atomAt(1)).toEqual({
+      span: byteSpan(1, 3),
+      value: 0xe9,
+      valid: true,
+      lineIndex: 0,
+    });
+    expect(topology.atomAt(3)).toEqual({
+      span: byteSpan(4, 5),
+      value: 0x80,
+      valid: false,
+      lineIndex: 1,
+    });
+    expect(Object.isFrozen(topology.atomAt(0))).toBe(true);
+    expect(topology.listAtoms().map(atomTuple)).toEqual(
+      [0, 1, 2, 3].map((index) => atomTuple(topology.atomAt(index))),
+    );
+    expect(() => topology.atomAt(4)).toThrow(RangeError);
+    expect(() => topology.atomAt(-1)).toThrow(RangeError);
+    expect(() => topology.atomAt(0.5)).toThrow(RangeError);
   });
 
   it("does not synthesize replacement scalars for malformed bytes", () => {
     const topology = SourceTopology.of(snapshot(bytes(0xef, 0xbf, 0xbd, 0x80, 0xff)));
 
-    expect(topology.atoms.map((atom) => [atom.value, atom.valid])).toEqual([
+    expect(topology.listAtoms().map((atom) => [atom.value, atom.valid])).toEqual([
       [0xfffd, true],
       [0x80, false],
       [0xff, false],
@@ -137,6 +161,17 @@ function firstLineViolation(input: Uint8Array): string | undefined {
     const expected = oracleLineIndex(starts, offset);
     if (topology.getLineIndex(byteOffset(offset)) !== expected) {
       return `line index at ${String(offset)} != ${String(expected)}`;
+    }
+    // ASCII inputs: every offset is an atom boundary and every unit has width one.
+    const position = topology.lineColumn(byteOffset(offset), "atoms");
+    const expectedColumn = offset - (starts[expected] ?? 0);
+    if (
+      position.lineIndex !== expected ||
+      position.byteColumn !== expectedColumn ||
+      position.atomColumn !== expectedColumn ||
+      position.utf16Column !== expectedColumn
+    ) {
+      return `line/column at ${String(offset)} != line ${String(expected)} column ${String(expectedColumn)}`;
     }
   }
 
@@ -205,7 +240,12 @@ describe("SourceTopology TeX lines", () => {
     const topology = SourceTopology.of(snapshot(input));
 
     expect(topology.lineStarts).toEqual([0, 10]);
-    expect(topology.atoms.slice(0, 4).map((atom) => atom.lineIndex)).toEqual([0, 0, 0, 0]);
+    expect(
+      topology
+        .listAtoms()
+        .slice(0, 4)
+        .map((atom) => atom.lineIndex),
+    ).toEqual([0, 0, 0, 0]);
     expect(topology.getLineExtent(0)).toEqual(byteSpan(0, 10));
     expect(topology.getLineExtent(1)).toEqual(byteSpan(10, 10));
   });
@@ -213,6 +253,47 @@ describe("SourceTopology TeX lines", () => {
   it("matches a byte-level oracle over every CR, LF, and CRLF mix to length five", () => {
     const violation = visitLineMixes(5, (input) => firstLineViolation(input));
     expect(violation).toBeUndefined();
+  });
+
+  it("states line and column in bytes, atoms, and UTF-16 units", () => {
+    // A, é, LF, U+1F600, B
+    const topology = SourceTopology.of(
+      snapshot(bytes(0x41, 0xc3, 0xa9, 0x0a, 0xf0, 0x9f, 0x98, 0x80, 0x42)),
+    );
+
+    expect(topology.lineColumn(byteOffset(0), "atoms")).toEqual({
+      lineIndex: 0,
+      byteColumn: 0,
+      atomColumn: 0,
+      utf16Column: 0,
+    });
+    expect(topology.lineColumn(byteOffset(3), "atoms")).toEqual({
+      lineIndex: 0,
+      byteColumn: 3,
+      atomColumn: 2,
+      utf16Column: 2,
+    });
+    expect(topology.lineColumn(byteOffset(4), "atoms")).toEqual({
+      lineIndex: 1,
+      byteColumn: 0,
+      atomColumn: 0,
+      utf16Column: 0,
+    });
+    expect(topology.lineColumn(byteOffset(8), "atoms")).toEqual({
+      lineIndex: 1,
+      byteColumn: 4,
+      atomColumn: 1,
+      utf16Column: 2,
+    });
+    expect(topology.lineColumn(byteOffset(9), "atoms")).toEqual({
+      lineIndex: 1,
+      byteColumn: 5,
+      atomColumn: 2,
+      utf16Column: 3,
+    });
+    expect(Object.isFrozen(topology.lineColumn(byteOffset(9), "atoms"))).toBe(true);
+    expect(() => topology.lineColumn(byteOffset(2), "atoms")).toThrow(/inside/);
+    expect(() => topology.lineColumn(byteOffset(10), "atoms")).toThrow(RangeError);
   });
 
   it("rejects invalid line and span geometry", () => {
@@ -228,6 +309,8 @@ function conversionViolation(input: Uint8Array): string | undefined {
   const source = snapshot(input);
   const units = snapshotUtf8Units(source);
   const topology = SourceTopology.of(source);
+  const boundaryBytes: number[] = [];
+  const boundaryUtf16: number[] = [];
   let expectedUtf16 = 0;
 
   for (let index = 0; index <= units.count; index++) {
@@ -235,6 +318,8 @@ function conversionViolation(input: Uint8Array): string | undefined {
     const bytePosition = byteOffset(byte);
     const atomPosition = atomOffset(index, "atoms");
     const utf16Position = utf16Offset(expectedUtf16, "atoms");
+    boundaryBytes.push(byte);
+    boundaryUtf16.push(expectedUtf16);
 
     if (
       topology.byteToAtom(bytePosition, "atoms") !== index ||
@@ -259,7 +344,8 @@ function conversionViolation(input: Uint8Array): string | undefined {
           topology.validateByteOffset(position);
         }) ||
         !throwsRangeError(() => topology.byteToAtom(position, "atoms")) ||
-        !throwsRangeError(() => topology.byteToUtf16(position, "atoms"))
+        !throwsRangeError(() => topology.byteToUtf16(position, "atoms")) ||
+        !throwsRangeError(() => topology.lineColumn(position, "atoms"))
       ) {
         return `interior byte ${String(interior)} was accepted`;
       }
@@ -280,6 +366,28 @@ function conversionViolation(input: Uint8Array): string | undefined {
 
   if (topology.utf16Length !== expectedUtf16 || topology.atomCount !== units.count) {
     return "derived lengths disagree with the cached units";
+  }
+
+  // Line and column at every boundary, from the oracle line starts and the
+  // widths accumulated above rather than from the topology's own conversions.
+  const starts = oracleLineStarts(input);
+  for (let index = 0; index < boundaryBytes.length; index++) {
+    const byte = boundaryBytes[index] ?? 0;
+    const line = oracleLineIndex(starts, byte);
+    const lineStart = starts[line] ?? 0;
+    const startIndex = boundaryBytes.indexOf(lineStart);
+    if (startIndex < 0) {
+      return `line start ${String(lineStart)} is not a unit boundary`;
+    }
+    const position = topology.lineColumn(byteOffset(byte), "atoms");
+    if (
+      position.lineIndex !== line ||
+      position.byteColumn !== byte - lineStart ||
+      position.atomColumn !== index - startIndex ||
+      position.utf16Column !== (boundaryUtf16[index] ?? 0) - (boundaryUtf16[startIndex] ?? 0)
+    ) {
+      return `line/column at byte ${String(byte)} disagrees with the oracle`;
+    }
   }
   return undefined;
 }
@@ -344,18 +452,15 @@ describe("SourceTopology atoms coordinate conversions", () => {
     expect(() => topology.utf16ToAtom(utf16Offset(2, "atoms"), "atoms")).toThrow(/surrogate/);
     expect(() => topology.atomToByte(atomOffset(3, "atoms"), "atoms")).toThrow(RangeError);
     expect(() => topology.byteToAtom(byteOffset(7), "atoms")).toThrow(RangeError);
-    expect(() => {
-      Reflect.apply(
-        (offset: ReturnType<typeof byteOffset>, convention: "atoms") =>
-          topology.byteToAtom(offset, convention),
-        undefined,
-        [byteOffset(0), "textDecoderDefault"],
-      );
-    }).toThrow(/not implemented/);
+    const unimplemented = "textDecoderDefault" as string as "atoms";
+    expect(() => topology.byteToAtom(byteOffset(0), unimplemented)).toThrow(/not implemented/);
+    expect(() => topology.lineColumn(byteOffset(0), unimplemented)).toThrow(/not implemented/);
 
     if (Date.now() < 0) {
       // @ts-expect-error every conversion call must name its convention
       topology.byteToAtom(byteOffset(0));
+      // @ts-expect-error line/column also names its convention
+      topology.lineColumn(byteOffset(0));
       // @ts-expect-error TextDecoder conventions do not execute in Phase 2
       topology.byteToAtom(byteOffset(0), "textDecoderDefault");
       const decoderAtoms = atomSpan(0, 1, "textDecoderDefault");
@@ -367,7 +472,7 @@ describe("SourceTopology atoms coordinate conversions", () => {
     }
   });
 
-  it("satisfies the boundary and inverse laws over a seeded malformed-byte census", () => {
+  it("satisfies the boundary, inverse, and line/column laws over a seeded malformed-byte census", () => {
     expect(seededConversionCensus()).toBeUndefined();
   });
 

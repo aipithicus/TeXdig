@@ -44,6 +44,12 @@ export {
   type SourceSnapshotOptions,
 } from "./snapshot.js";
 
-export { SourceTopology, type AtomRun, type LineRange, type SourceAtom } from "./topology.js";
+export {
+  SourceTopology,
+  type AtomRun,
+  type LinePosition,
+  type LineRange,
+  type SourceAtom,
+} from "./topology.js";
 
 export { SourceSlice } from "./slice.js";

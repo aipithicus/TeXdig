@@ -131,6 +131,25 @@ export function atomSpan<C extends Convention>(
   return span(atomOffset(start, convention), atomOffset(end, convention));
 }
 
+/**
+ * Index of `value` in a sorted boundary column, or `-1` when `value` is not an
+ * exact boundary. Shared by the snapshot and the topology so both reject an
+ * interior position the same way.
+ */
+export function exactBoundaryIndex(boundaries: ArrayLike<number>, value: number): number {
+  let low = 0;
+  let high = boundaries.length;
+  while (low < high) {
+    const middle = low + Math.floor((high - low) / 2);
+    if ((boundaries[middle] ?? 0) < value) {
+      low = middle + 1;
+    } else {
+      high = middle;
+    }
+  }
+  return low < boundaries.length && boundaries[low] === value ? low : -1;
+}
+
 export function isEmpty(s: Span<Offset>): boolean {
   return s.start === s.end;
 }

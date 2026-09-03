@@ -6,6 +6,10 @@
  * scalar and every preserved invalid byte is one atom. The latter occupies one
  * UTF-16 code unit, matching the surrogate-escape correspondence adopted in
  * D29. Only exact atom boundaries convert between coordinate spaces.
+ *
+ * Storage is columnar: the unit columns cached on the snapshot plus one UTF-16
+ * start and one line index per atom. Atom records are materialized on demand
+ * through `atomAt`, so a large source costs a few bytes per atom, not an object.
  */
 
 import {
@@ -13,6 +17,7 @@ import {
   atomSpan,
   byteOffset,
   byteSpan,
+  exactBoundaryIndex,
   utf16Offset,
   utf16Span,
   type AtomOffset,
@@ -41,6 +46,18 @@ export interface LineRange {
   readonly count: number;
 }
 
+/**
+ * A byte position resolved to its line, with the column stated in every unit.
+ * Columns are zero-based distances from the line start; atom and UTF-16 columns
+ * are counted under the `atoms` convention.
+ */
+export interface LinePosition {
+  readonly lineIndex: number;
+  readonly byteColumn: number;
+  readonly atomColumn: number;
+  readonly utf16Column: number;
+}
+
 /** A maximal consecutive atom range agreeing on one caller-supplied key. */
 export interface AtomRun<K> {
   readonly span: ByteSpan;
@@ -49,14 +66,15 @@ export interface AtomRun<K> {
 }
 
 interface TopologyState {
-  readonly byteStarts: Readonly<Uint32Array>;
+  readonly units: Utf8Units;
   readonly utf16Starts: Readonly<Uint32Array>;
+  readonly lineIndexes: Readonly<Uint32Array>;
 }
 
-interface BuiltTopology {
-  readonly atoms: readonly SourceAtom[];
+interface BuiltColumns {
   readonly lineStarts: readonly ByteOffset[];
-  readonly utf16Starts: Readonly<Uint32Array>;
+  readonly utf16Starts: Uint32Array;
+  readonly lineIndexes: Uint32Array;
 }
 
 const TOPOLOGIES = new WeakMap<SourceSnapshot, SourceTopology>();
@@ -84,24 +102,9 @@ function assertCoordinate(value: number, maximum: number, name: string): void {
   }
 }
 
-function exactBoundaryIndex(boundaries: ArrayLike<number>, value: number): number {
-  let low = 0;
-  let high = boundaries.length;
-  while (low < high) {
-    const middle = low + Math.floor((high - low) / 2);
-    const candidate = boundaries[middle] ?? 0;
-    if (candidate < value) {
-      low = middle + 1;
-    } else {
-      high = middle;
-    }
-  }
-  return low < boundaries.length && boundaries[low] === value ? low : -1;
-}
-
 function byteBoundaryIndex(topology: SourceTopology, offset: ByteOffset): number {
   assertCoordinate(offset, topology.byteLength, "byte offset");
-  const index = exactBoundaryIndex(stateFor(topology).byteStarts, offset);
+  const index = exactBoundaryIndex(stateFor(topology).units.starts, offset);
   if (index < 0) {
     throw new RangeError(
       `byte offset ${String(offset)} falls inside a valid multi-byte UTF-8 unit`,
@@ -144,40 +147,36 @@ function isLineBreak(units: Utf8Units, index: number): boolean {
   return !(units.valid[index + 1] === 1 && units.values[index + 1] === 0x0a);
 }
 
-function buildTopology(snapshot: SourceSnapshot): BuiltTopology {
-  const units = snapshotUtf8Units(snapshot);
-  const atoms: SourceAtom[] = [];
+function buildColumns(units: Utf8Units): BuiltColumns {
   const lineStarts: ByteOffset[] = [byteOffset(0)];
   const utf16Starts = new Uint32Array(units.count + 1);
+  const lineIndexes = new Uint32Array(units.count);
   let lineIndex = 0;
   let utf16Position = 0;
 
   for (let index = 0; index < units.count; index++) {
-    const start = units.starts[index] ?? 0;
-    const end = units.starts[index + 1] ?? 0;
     utf16Starts[index] = utf16Position;
-    atoms.push(
-      Object.freeze({
-        span: byteSpan(start, end),
-        value: units.values[index] ?? 0,
-        valid: units.valid[index] === 1,
-        lineIndex,
-      }),
-    );
+    lineIndexes[index] = lineIndex;
     utf16Position += utf16Width(units, index);
 
     if (isLineBreak(units, index)) {
-      lineStarts.push(byteOffset(end));
+      lineStarts.push(byteOffset(units.starts[index + 1] ?? 0));
       lineIndex++;
     }
   }
   utf16Starts[units.count] = utf16Position;
 
-  return {
-    atoms: Object.freeze(atoms),
-    lineStarts: Object.freeze(lineStarts),
-    utf16Starts,
-  };
+  return { lineStarts: Object.freeze(lineStarts), utf16Starts, lineIndexes };
+}
+
+function materializeAtom(state: TopologyState, index: number): SourceAtom {
+  const { units } = state;
+  return Object.freeze({
+    span: byteSpan(units.starts[index] ?? 0, units.starts[index + 1] ?? 0),
+    value: units.values[index] ?? 0,
+    valid: units.valid[index] === 1,
+    lineIndex: state.lineIndexes[index] ?? 0,
+  });
 }
 
 function lineRange(start: number, end: number): LineRange {
@@ -194,24 +193,23 @@ export class SourceTopology {
   public readonly atomCount: number;
   public readonly utf16Length: Utf16Offset<"atoms">;
   public readonly lineCount: number;
-  public readonly atoms: readonly SourceAtom[];
   public readonly lineStarts: readonly ByteOffset[];
 
   private constructor(snapshot: SourceSnapshot) {
     const units = snapshotUtf8Units(snapshot);
-    const built = buildTopology(snapshot);
+    const built = buildColumns(units);
 
     this.snapshot = snapshot;
     this.byteLength = snapshot.byteLength;
     this.atomCount = units.count;
     this.utf16Length = utf16Offset(built.utf16Starts[units.count] ?? 0, "atoms");
     this.lineCount = built.lineStarts.length;
-    this.atoms = built.atoms;
     this.lineStarts = built.lineStarts;
 
     STATES.set(this, {
-      byteStarts: units.starts,
+      units,
       utf16Starts: built.utf16Starts,
+      lineIndexes: built.lineIndexes,
     });
     Object.freeze(this);
   }
@@ -227,6 +225,24 @@ export class SourceTopology {
     return created;
   }
 
+  /** Materializes atom `index` as a frozen record. Throws `RangeError` outside `[0, atomCount)`. */
+  public atomAt(index: number): SourceAtom {
+    if (!Number.isSafeInteger(index) || index < 0 || index >= this.atomCount) {
+      throw new RangeError(
+        `atom index must be a safe integer in [0, ${String(this.atomCount)}), received ${String(index)}`,
+      );
+    }
+    return materializeAtom(stateFor(this), index);
+  }
+
+  /** Materializes every atom in order. Intended for tests and small inputs. */
+  public listAtoms(): readonly SourceAtom[] {
+    const state = stateFor(this);
+    return Object.freeze(
+      Array.from({ length: this.atomCount }, (_, index) => materializeAtom(state, index)),
+    );
+  }
+
   /** Validates that an in-range byte offset lies on an atom boundary. */
   public validateByteOffset(offset: ByteOffset): void {
     byteBoundaryIndex(this, offset);
@@ -239,7 +255,10 @@ export class SourceTopology {
     byteBoundaryIndex(this, span.end);
   }
 
-  /** Finds the line containing an in-range byte position, including EOF. */
+  /**
+   * Finds the line containing an in-range byte position, including EOF. An
+   * offset equal to a line start belongs to that line.
+   */
   public getLineIndex(offset: ByteOffset): number {
     assertCoordinate(offset, this.byteLength, "byte offset");
 
@@ -270,7 +289,9 @@ export class SourceTopology {
 
   /**
    * Projects a byte span onto the lines it intersects. An empty span projects
-   * to the one line containing its position, including the trailing EOF line.
+   * to the one line that begins at or contains its position, including the
+   * trailing EOF line. This is the TeXdig rule; fixtures record it per
+   * implementation.
    */
   public project(span: ByteSpan): LineRange {
     this.snapshot.validateSpan(span);
@@ -280,6 +301,28 @@ export class SourceTopology {
     }
     const last = this.getLineIndex(byteOffset(span.end - 1));
     return lineRange(first, last + 1);
+  }
+
+  /**
+   * Resolves an atom-boundary byte offset to its line and zero-based columns in
+   * bytes, atoms, and UTF-16 units. Rejects offsets inside a multi-byte atom.
+   */
+  public lineColumn(offset: ByteOffset, convention: "atoms"): LinePosition {
+    assertAtomsConvention(convention);
+    const index = byteBoundaryIndex(this, offset);
+    const lineIndex = this.getLineIndex(offset);
+    const lineStart = this.lineStarts[lineIndex] ?? byteOffset(0);
+    const state = stateFor(this);
+    const startIndex = exactBoundaryIndex(state.units.starts, lineStart);
+    if (startIndex < 0) {
+      throw new RangeError(`line start ${String(lineStart)} is not an atom boundary`);
+    }
+    return Object.freeze({
+      lineIndex,
+      byteColumn: offset - lineStart,
+      atomColumn: index - startIndex,
+      utf16Column: (state.utf16Starts[index] ?? 0) - (state.utf16Starts[startIndex] ?? 0),
+    });
   }
 
   /** Emits maximal consecutive atom runs agreeing under `sameKey`. */
@@ -293,22 +336,20 @@ export class SourceTopology {
     if (typeof sameKey !== "function") {
       throw new TypeError("sameKey must be a function");
     }
-    const firstAtom = this.atoms[0];
-    if (firstAtom === undefined) {
+    const state = stateFor(this);
+    if (this.atomCount === 0) {
       return Object.freeze([]);
     }
 
     const runs: AtomRun<K>[] = [];
+    const firstAtom = materializeAtom(state, 0);
     let currentKey = breakKey(firstAtom);
     let start = firstAtom.span.start;
     let end = firstAtom.span.end;
     let atomCount = 1;
 
-    for (let index = 1; index < this.atoms.length; index++) {
-      const atom = this.atoms[index];
-      if (atom === undefined) {
-        throw new RangeError(`missing atom at index ${String(index)}`);
-      }
+    for (let index = 1; index < this.atomCount; index++) {
+      const atom = materializeAtom(state, index);
       const key = breakKey(atom);
       if (sameKey(key, currentKey)) {
         end = atom.span.end;
@@ -335,7 +376,7 @@ export class SourceTopology {
   public atomToByte(offset: AtomOffset<"atoms">, convention: "atoms"): ByteOffset {
     assertAtomsConvention(convention);
     const index = atomBoundaryIndex(this, offset);
-    return byteOffset(stateFor(this).byteStarts[index] ?? 0);
+    return byteOffset(stateFor(this).units.starts[index] ?? 0);
   }
 
   public byteToUtf16(offset: ByteOffset, convention: "atoms"): Utf16Offset<"atoms"> {
@@ -347,7 +388,7 @@ export class SourceTopology {
   public utf16ToByte(offset: Utf16Offset<"atoms">, convention: "atoms"): ByteOffset {
     assertAtomsConvention(convention);
     const index = utf16BoundaryIndex(this, offset);
-    return byteOffset(stateFor(this).byteStarts[index] ?? 0);
+    return byteOffset(stateFor(this).units.starts[index] ?? 0);
   }
 
   public atomToUtf16(offset: AtomOffset<"atoms">, convention: "atoms"): Utf16Offset<"atoms"> {
