@@ -42,16 +42,16 @@ jobs:
           fi
 
           if git diff --quiet "$range" -- \
-            .github/workflows/conformance-deep.yml \
             .node-version \
-            fixtures/conformance/README.md \
             fixtures/conformance/utf8/classes.txt \
             package.json \
             packages/texdig/src/source/span.ts \
             packages/texdig/src/source/utf8.ts \
             pnpm-lock.yaml \
             pnpm-workspace.yaml \
-            scripts/conformance \
+            scripts/conformance/families/utf8-classes.ts \
+            scripts/conformance/format.ts \
+            scripts/conformance/oracles.ts \
             scripts/generate-conformance.ts \
             scripts/run-conformance-deep.ts \
             tests/conformance.test.ts \

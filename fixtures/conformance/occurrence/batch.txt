@@ -1,0 +1,12 @@
+# family: occurrence/batch
+# schema: 1
+# generator: texdig-conformance 0.0.0
+# seed: 0xCC02026
+# rule: 500 cases; length=1+next()%12; bytes=next()%256; claimCount=next()%13; per claim start=next()%length, end=start+1+next()%(length-start), kind=next()%4, producer=next()%3, priority=next()%9-4, rule=next()%3
+# laws: O1 O2 O3 O4 O5
+# digest: sha256:7a47741d9fe7b397dbe5128dccaa9bbf800620a276b690bd8a493ae9e52b4a01 canon:rows-v1 count:500 tier:default
+
+- ; E:utf-8 ; C:- ; K:- ; D:- ; R:- ; G:- ; Y:- ; X:-/- ; P:-/-
+41 ; E:utf-8 ; C:0-1/token/lexer@1/0/- ; K:token ; D:lexer@1 ; R:- ; G:0 ; Y:0 ; X:-/-,0/0,-/- ; P:0/0,-/-
+41 42 43 44 ; E:utf-8 ; C:1-3/token/lexer@1/0/scan-a,1-3/token/lexer@1/2/scan-a,0-4/delimiter/parser@2/1/-,2-4/comment/lexer@1/-1/scan-b ; K:token,delimiter,comment ; D:lexer@1,parser@2 ; R:scan-a,scan-b ; G:2.0.1.3 ; Y:1.2.0.3 ; X:-/-,2/2,2.0.1/1.2.0,2.0.1.3/1.2.0.3,2.0.1.3/1.2.0.3,-/-,2.0.1/1.2.0,2.0.1.3/1.2.0.3,2.0.1.3/1.2.0.3,-/-,2.0.1.3/1.2.0.3,2.0.1.3/1.2.0.3,-/-,2.3/2.3,-/- ; P:2/2,2.0.1/1.2.0,2.0.1.3/1.2.0.3,2.3/2.3,-/-
+30 31 32 33 34 ; E:utf-8 ; C:0-1/residue/lexer@1/-2/-,1-5/token/lexer@2/-2/scan-b,1-2/residue/lexer@1/-2/scan-a,3-5/token/parser@2/3/scan-b ; K:residue,token ; D:lexer@1,lexer@2,parser@2 ; R:scan-b,scan-a ; G:0.1.2.3 ; Y:3.0.1.2 ; X:-/-,0/0,0.1.2/0.1.2,0.1.2/0.1.2,0.1.2.3/3.0.1.2,0.1.2.3/3.0.1.2,-/-,1.2/1.2,1.2/1.2,1.2.3/3.1.2,1.2.3/3.1.2,-/-,1/1,1.3/3.1,1.3/3.1,-/-,1.3/3.1,1.3/3.1,-/-,1.3/3.1,-/- ; P:0/0,1.2/1.2,1/1,1.3/3.1,1.3/3.1,-/-

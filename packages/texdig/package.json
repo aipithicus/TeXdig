@@ -20,6 +20,10 @@
       "types": "./dist/source/index.d.ts",
       "default": "./dist/source/index.js"
     },
+    "./regions": {
+      "types": "./dist/regions/index.d.ts",
+      "default": "./dist/regions/index.js"
+    },
     "./package.json": "./package.json"
   },
   "publishConfig": {

@@ -12,7 +12,7 @@ Required headers are `family` (`group/name`), `schema` (`1`), and `generator` (`
 # digest: sha256:<64 lowercase hex digits> canon:rows-v1 count:<decimal cases> tier:<default|deep>
 ```
 
-Rows contain three or more fields separated by exactly ` ; `. Field one is the input bytes as uppercase hexadecimal pairs separated by one space, or `-` for empty input. Field two is the declared encoding as `E:<label>`; labels are non-empty ASCII encoding names made from letters, digits, `.`, `_`, `+`, and `-`. Every fixture in this corpus uses `E:utf-8`. The declaration is recorded metadata and never licenses transcoding, normalization, or replacement of the input bytes. Family fields begin at field three and are defined below. Decimal integers have no sign or leading padding. A span is half-open and written `[a,b)`. Lists are comma-separated; `-` denotes an empty list where a prefixed list token requires a value.
+Rows contain three or more fields separated by exactly ` ; `. Field one is the input bytes as uppercase hexadecimal pairs separated by one space, or `-` for empty input. Field two is the declared encoding as `E:<label>`; labels are non-empty ASCII encoding names made from letters, digits, `.`, `_`, `+`, and `-`. Every fixture in this corpus uses `E:utf-8`. The declaration is recorded metadata and never licenses transcoding, normalization, or replacement of the input bytes. Family fields begin at field three and are defined below. Non-negative decimal integers have no sign or leading padding; a signed integer has one leading `-` only when negative. A span is half-open and written `[a,b)`. Lists are comma-separated; `-` denotes an empty list where a prefixed list token requires a value.
 
 ## Shared token vocabulary
 
@@ -21,6 +21,9 @@ Rows contain three or more fields separated by exactly ` ; `. Field one is the i
 - Decoder result: `U:<units>`; invalid count: `N:<decimal>`; leading BOM flag: `M:0|1`.
 - Line starts: `L:0,4,9`; per-offset line indexes: `I:0,0,1`; line/column positions: `P:line/byteCol/atomCol/utf16Col,...`.
 - Coordinate boundary: `B:byte/utf16/atom`; repeated boundaries are comma-separated.
+- Occurrence metadata token: a non-empty ASCII token beginning with a letter or digit and continuing with letters, digits, `.`, `_`, `+`, or `-`.
+- Occurrence claim: `start-end/kind/producerId@version/priority/ruleId`; `priority` is a signed 32-bit integer and `-` in the final slot means no rule id.
+- Occurrence ordinal list: discovery ordinals separated by `.`, or `-` for empty. A lookup signature is `geometryOrdinals/priorityOrdinals`.
 - Booleans are `0` and `1`. Family-specific prefixes distinguish otherwise similar values.
 
 ## Digest canonicalization
@@ -63,6 +66,11 @@ The classes from Unicode Table 3-7 are: ASCII `00-7F`; continuations `80-8F`, `9
 - `L1`: parent/child offset and span maps are mutual inverses on the window.
 - `L2`: nested slice maps compose to the direct root slice.
 - `L3`: downward maps reject geometry outside or crossing the window.
+- `O1`: freezing preserves discovery order and ordinal identity, including duplicate geometry, overlap, and nesting.
+- `O2`: kind, structured producer, and rule-id tables preserve values in first-appearance order.
+- `O3`: geometry order is start ascending, end descending, then discovery ordinal.
+- `O4`: priority order is priority descending, then geometry order.
+- `O5`: intersecting-span and containing-position lookups agree with brute force under both orders; empty span queries and the EOF position return no records.
 
 ## Family fields and enumeration
 
@@ -75,3 +83,4 @@ The classes from Unicode Table 3-7 are: ASCII `00-7F`; continuations `80-8F`, `9
 - `topology/conversions`: `B:<boundaries>`. Each boundary is byte/UTF-16/atom under `atoms`. Named rows are explicit. The 1,000-row census uses `length=next()%33`, then `next()%256` per byte.
 - `snapshot/identity`: hash vector suffixes are `V:<sha256>`. Compatibility suffixes are `A:<sourceId>/<revision> ; R:<rightBytes>|<rightDeclaredEncoding>|<sourceId>|<revision> ; K:<compatible>`; the right input's declaration is explicit because compatibility ignores decoding metadata and compares only the identity triple. The digest census suffixes are `M:<mutatedIndex> ; C:<fingerprintChanged>` for xor-FF at indices 0 through 31.
 - `slice/laws`: canonical digest suffixes are `W:[parentStart,parentEnd) ; C:<childBytes> ; N:[childStart,childEnd)>[parentStart,parentEnd) ; O:<outsideExists>`. Generate 500 inputs using the stated seed and rule; all chosen boundaries come from the reference decoder's atoms.
+- `occurrence/batch`: `C:<claims> ; K:<kinds> ; D:<producerId@version> ; R:<ruleIds> ; G:<geometryOrdinals> ; Y:<priorityOrdinals> ; X:<spanQueries> ; P:<positionQueries>`. `C`, `K`, `D`, and `R` retain discovery/first-appearance order. `G` and `Y` use the two total orders above. `X` enumerates every half-open query span over input boundaries in start-major then end-major order; `P` enumerates positions from zero through EOF. Each lookup entry is a signature, entries are comma-separated, and no entry may be omitted. Four named rows make empty, duplicate, overlapping, nested, priority, and structural-producer cases explicit. For each of 500 digest cases, draw `length=1+next()%12`, then `length` bytes as `next()%256`, then `claimCount=next()%13`. Each claim consumes six draws in this order: `start=next()%length`; `end=start+1+next()%(length-start)`; `kind=next()%4` over `token,delimiter,comment,residue`; `producer=next()%3` over `lexer@1,parser@2,lexer@2`; `priority=next()%9-4`; and `rule=next()%3` over `-,scan-a,scan-b`.

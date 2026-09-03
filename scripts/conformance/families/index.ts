@@ -1,3 +1,4 @@
+import { buildOccurrenceBatch } from "./occurrence-batch.ts";
 import { buildSliceLaws } from "./slice-laws.ts";
 import { buildSnapshotIdentity } from "./snapshot-identity.ts";
 import { buildSpanPredicates } from "./span-predicates.ts";
@@ -18,5 +19,6 @@ export function buildFamilies(includeDeep = true): readonly GeneratedFamily[] {
     buildTopologyConversions(),
     buildSnapshotIdentity(),
     buildSliceLaws(),
+    buildOccurrenceBatch(),
   ];
 }
