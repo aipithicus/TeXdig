@@ -1,4 +1,5 @@
 import { buildOccurrenceBatch } from "./occurrence-batch.ts";
+import { buildOccurrenceSelection } from "./occurrence-selection.ts";
 import { buildSliceLaws } from "./slice-laws.ts";
 import { buildSnapshotIdentity } from "./snapshot-identity.ts";
 import { buildSpanSetAlgebra } from "./span-set-algebra.ts";
@@ -21,6 +22,7 @@ export function buildFamilies(includeDeep = true): readonly GeneratedFamily[] {
     buildSnapshotIdentity(),
     buildSliceLaws(),
     buildOccurrenceBatch(),
+    buildOccurrenceSelection(),
     buildSpanSetAlgebra(),
   ];
 }
