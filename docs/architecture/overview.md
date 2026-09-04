@@ -25,12 +25,12 @@ projections              query · text edits · serializers · HTML/Markdown ter
 
 ## 2. Source Model & Coordinate Spaces
 
-- Source text is stored once. Nodes reference half-open ranges; byte, UTF-16, scalar, and line/column coordinates are derived through the source document rather than stored on nodes.
-- Rebasing between coordinate spaces — a fragment reparsed in isolation, an included file, a generated string — is an explicit operation. A nested parse cannot present its local offsets as parent coordinates.
+- Source bytes are stored once. Nodes reference half-open byte ranges; byte, UTF-16, atom, and line/column coordinates are derived through source topology rather than stored on nodes. Conversion among those spaces is explicit and rejects positions that are not valid boundaries under the named convention.
+- Rebasing between a parent snapshot and a child `SourceSlice` basis is explicit. A slice parsed in isolation cannot present its local offsets as parent coordinates.
 - Every source byte is represented by syntax or by explicit residue. The accounting is part of the parse result.
 - Original bytes are preserved; encoding and line-ending facts (CRLF, non-UTF-8 material) are recorded, not normalized away.
 
-The implemented Phase 2 substrate exposes immutable `SourceSnapshot`, `SourceTopology`, and `SourceSlice` values; snapshot-bound `OccurrenceBatch`, `OccurrenceSelection`, and `SpanSet` collections; and strict-stack pairing with typed mismatch, dangling-close, and unclosed-open residue. Collection rebasing is explicit and checked, while selection and pairing retain their exact ordinal bases.
+The implemented substrate exposes immutable `SourceSnapshot`, `SourceTopology`, and `SourceSlice` values; snapshot-bound `OccurrenceBatch`, `OccurrenceSelection`, and `SpanSet` collections; and strict-stack pairing with typed mismatch, dangling-close, and unclosed-open residue. Collection rebasing is explicit and checked, while selection and pairing retain their exact ordinal bases.
 
 ---
 

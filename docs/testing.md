@@ -16,14 +16,14 @@ TeXdig's verification approach combines deterministic property tests over the ke
 
 ## 2. Verification Categories
 
-| Category                         | Purpose                                                                          | Examples                                                                                            |
-| :------------------------------- | :------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
-| **Identity tests**               | Parse → realize reproduces input byte-exactly                                    | CRLF and LF sources, non-UTF-8 material, BOM, Unicode scalars                                       |
-| **Accounting tests**             | Total byte coverage by node or residue                                           | malformed input, unterminated math, mismatched environments                                         |
-| **Invariant tests**              | Structural guarantees hold across operations                                     | coordinate-space isolation on rebase, immutability of syntax, span arithmetic on string splits      |
-| **Differential tests**           | Comparison against parent outputs with lineage labels                            | grammar productions, argument attachment, expansion results                                         |
-| **Negative-specification tests** | Properties that must be preserved or distinguished, not flagged                  | document-shipped definitions vs. registry material, physical vs. reachable duplication              |
-| **Conformance fixtures**         | Generated, language-neutral fixture families checked against independent oracles | UTF-8, span, snapshot, topology, slice, occurrence, selection, coverage, rebasing, and pairing laws |
+| Category                         | Purpose                                                                                 | Examples                                                                                            |
+| :------------------------------- | :-------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
+| **Identity tests**               | Parse → realize reproduces input byte-exactly                                           | CRLF and LF sources, non-UTF-8 material, BOM, Unicode scalars                                       |
+| **Accounting tests**             | Total byte coverage by node or residue                                                  | malformed input, unterminated math, mismatched environments                                         |
+| **Invariant tests**              | Structural guarantees hold across operations                                            | coordinate-space isolation on rebase, immutability of syntax, span arithmetic on string splits      |
+| **Differential tests**           | Comparison against parent outputs with lineage labels                                   | grammar productions, argument attachment, expansion results                                         |
+| **Negative-specification tests** | Properties that must be preserved or distinguished, not flagged                         | document-shipped definitions vs. registry material, physical vs. reachable duplication              |
+| **Conformance fixtures**         | Twelve generated, language-neutral fixture families checked against independent oracles | UTF-8, span, snapshot, topology, slice, occurrence, selection, coverage, rebasing, and pairing laws |
 
 ---
 

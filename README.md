@@ -39,7 +39,7 @@ projections            query · text edits · serializers · HTML/Markdown termi
 
 ## Status
 
-Pre-release. Phase 2's source and thin-region substrate is complete and fixture-green: byte-preserving snapshots/topology/slices, occurrence batches and selections, normalized coverage, strict-stack pairing, and twelve language-neutral conformance families. Phase 3 opens with the synthetic `mini_article` mechanics slice before broader grammar work. The governing kernel contracts remain in [`docs/specification/contracts.md`](docs/specification/contracts.md).
+Pre-release. The source and thin-region substrate is implemented and fixture-green: byte-preserving snapshots/topology/slices, occurrence batches and selections, normalized coverage, strict-stack pairing, and twelve language-neutral conformance families. The next development slice is the synthetic `mini_article` mechanics fixture—bytes to tokens to a lossless CST, explicit residue, and a balanced ledger—before broader grammar work. The governing kernel contracts remain in [`docs/specification/contracts.md`](docs/specification/contracts.md).
 
 ---
 

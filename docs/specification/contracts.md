@@ -4,12 +4,23 @@ This document states the contracts the TeXdig engine is built to. Implementation
 
 ---
 
-## 1. Source and Coordinates
+## 1. Source, Coordinates, and Region Collections
 
-- Source text is stored once. Concrete syntax nodes reference half-open ranges into it.
-- Byte, UTF-16, scalar, and line/column coordinates are derived through the source document, not stored on nodes.
-- Rebasing between coordinate spaces is explicit and checked. Out-of-window geometry is rejected, never clamped.
+### Source coordinates
+
+- Source bytes are stored once. Concrete syntax nodes reference half-open byte ranges into them.
+- Byte, UTF-16, atom, and line/column coordinates are derived through source topology, not stored on nodes. Conversion is explicit and rejects positions that are not boundaries under the named convention.
+- A `SourceSlice` gives its child a distinct coordinate basis. Upward offset and span rebasing is total; downward rebasing rejects geometry outside the slice window rather than clamping it; nested rebases compose.
+- Snapshot compatibility is equality of the exact source identifier, byte-content hash, and revision. Recorded decoding metadata is not part of that identity.
 - Original bytes are preserved. Line endings, byte-order marks, and non-UTF-8 material are recorded as facts.
+
+### Region collections
+
+- An `OccurrenceBatch` is a frozen, snapshot-bound collection of nonempty stamped claims. Discovery ordinals and metadata survive rebasing; geometry and priority-then-geometry are named derived orders rather than mutations of the batch.
+- An `OccurrenceSelection` is an immutable ordinal set bound by reference to one exact batch. Set operations reject a different batch even when its contents are equal. `coverage()` explicitly forgets occurrence identity into a `SpanSet`.
+- A `SpanSet` is snapshot-bound normalized byte coverage. Construction drops empty spans and merges overlap and adjacency; binary operations require compatible snapshot identities; complement is relative to the whole snapshot.
+- Batch and SpanSet rebasing occurs only through a compatible `SourceSlice`. Downward collection rebasing rejects any member not wholly inside the child window, and nested rebases compose.
+- Strict-stack pairing consumes exact selections under one producer-stamped delimiter-family policy. A close pops only the stack top; incompatibility never searches lower. Matches and typed mismatch, dangling-close, and unclosed-open residue retain their input ordinals, while `pairedRegions()` is an explicit identity-dropping coverage projection.
 
 ## 2. Accounting
 
