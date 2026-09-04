@@ -24,6 +24,10 @@
       "types": "./dist/regions/index.d.ts",
       "default": "./dist/regions/index.js"
     },
+    "./latex": {
+      "types": "./dist/latex/index.d.ts",
+      "default": "./dist/latex/index.js"
+    },
     "./package.json": "./package.json"
   },
   "publishConfig": {

@@ -11,7 +11,7 @@
   },
   "scripts": {
     "typecheck": "tsc -b && tsc -p tsconfig.tests.json",
-    "build": "tsc -b",
+    "build": "pnpm grammars:generate && tsc -b && node scripts/build-grammars.ts --copy",
     "clean": "tsc -b --clean",
     "lint": "eslint .",
     "format": "prettier --write .",
@@ -19,6 +19,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "mechanics:fixtures:generate": "node scripts/generate-mechanics-fixtures.ts",
+    "grammars:generate": "node scripts/build-grammars.ts",
+    "grammars:check": "node scripts/build-grammars.ts --check",
     "conformance:generate": "node scripts/generate-conformance.ts",
     "conformance:check": "node scripts/generate-conformance.ts --check",
     "conformance:check:deep": "node scripts/generate-conformance.ts --check --deep",

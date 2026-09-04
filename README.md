@@ -39,19 +39,20 @@ projections            query · text edits · serializers · HTML/Markdown termi
 
 ## Status
 
-Pre-release. The source and thin-region substrate is implemented and fixture-green: byte-preserving snapshots/topology/slices, occurrence batches and selections, normalized coverage, strict-stack pairing, and twelve language-neutral conformance families. The next development slice is the synthetic `mini_article` mechanics fixture—bytes to tokens to a lossless CST, explicit residue, and a balanced ledger—before broader grammar work. The governing kernel contracts remain in [`docs/specification/contracts.md`](docs/specification/contracts.md).
+Pre-release. The source and thin-region substrate is fixture-green, and the first syntax surface is implemented: byte-exact LaTeX token/trivia/CST/residue accounting, explicit lexical-state runs for name regimes and verbatim, eight bounded sublanguage checkpoints, deterministic generation of nine Peggy parsers, and an 82-file parent-oracle inventory. External corpus evidence remains milestone work rather than a routine repository gate. The governing kernel contracts remain in [`docs/specification/contracts.md`](docs/specification/contracts.md).
 
 ---
 
 ## Documentation
 
-| Document                                                           | Description                                                                         |
-| :----------------------------------------------------------------- | :---------------------------------------------------------------------------------- |
-| [**DEVELOPMENT.md**](DEVELOPMENT.md)                               | Toolchain, commands, project layout, build configuration.                           |
-| [**AGENTS.md**](AGENTS.md)                                         | Agent orientation, working culture, repository conventions.                         |
-| [**Architecture Overview**](docs/architecture/overview.md)         | Tiers, source and coordinate model, package shape, lineage.                         |
-| [**Design Principles**](docs/architecture/design-principles.md)    | Principles that shape the engine and questions for placing new capabilities.        |
-| [**Kernel Contracts**](docs/specification/contracts.md)            | The contracts the engine is built to, including the registry and binding contracts. |
-| [**Scope & Non-Goals**](docs/specification/non-goals.md)           | Deliberately absent features and boundaries.                                        |
-| [**Capability Outlook**](docs/specification/capability-outlook.md) | Later capabilities and open design questions, without release commitments.          |
-| [**Verification & Testing**](docs/testing.md)                      | Verification approach, fixture tiers, and the boundary with external corpus runs.   |
+| Document                                                           | Description                                                                          |
+| :----------------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| [**DEVELOPMENT.md**](DEVELOPMENT.md)                               | Toolchain, commands, project layout, build configuration.                            |
+| [**AGENTS.md**](AGENTS.md)                                         | Agent orientation, working culture, repository conventions.                          |
+| [**Architecture Overview**](docs/architecture/overview.md)         | Tiers, source and coordinate model, package shape, lineage.                          |
+| [**Design Principles**](docs/architecture/design-principles.md)    | Principles that shape the engine and questions for placing new capabilities.         |
+| [**Grammar Capability Ledger**](docs/grammar-capability-ledger.md) | Fourteen parent grammars, consumers, fault lines, authority, and TeXdig disposition. |
+| [**Kernel Contracts**](docs/specification/contracts.md)            | The contracts the engine is built to, including the registry and binding contracts.  |
+| [**Scope & Non-Goals**](docs/specification/non-goals.md)           | Deliberately absent features and boundaries.                                         |
+| [**Capability Outlook**](docs/specification/capability-outlook.md) | Later capabilities and open design questions, without release commitments.           |
+| [**Verification & Testing**](docs/testing.md)                      | Verification approach, fixture tiers, and the boundary with external corpus runs.    |

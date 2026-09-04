@@ -24,3 +24,15 @@ export {
   type PairingResult,
   type PairingUnclosedOpenResidue,
 } from "./pairing.js";
+export {
+  StateRunSequence,
+  type StateBranch,
+  type StateBranchDefinition,
+  type StateContinuation,
+  type StateLabel,
+  type StateRun,
+  type StateRunDefinition,
+  type StateRunSequenceDefinition,
+  type StateTransition,
+  type StateTransitionDefinition,
+} from "./state-runs.js";

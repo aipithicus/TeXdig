@@ -5,7 +5,7 @@
   "overrides": [
     {
       "files": ["*.peggy", "*.pegjs"],
-      "options": { "parser": "pegjs" }
+      "options": { "parser": "pegjs-parser" }
     }
   ]
 }

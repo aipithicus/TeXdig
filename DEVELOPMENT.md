@@ -16,7 +16,7 @@ A practical guide for building, testing, and packaging **TeXdig** (TypeScript, p
 | Tests                 | vitest 4 (`@vitest/coverage-v8` for coverage)                                                                       |
 | Lint                  | eslint 10 with typescript-eslint (type-checked rules), `eslint-config-prettier`; `jiti` loads the TypeScript config |
 | Format                | prettier 3 with `prettier-plugin-pegjs` (grammars are formatted source)                                             |
-| Grammars              | peggy 5 (compiled at build; script lands with the first grammar)                                                    |
+| Grammars              | peggy 5 (generated deterministically into `src/generated/`; copied into `dist/generated/` at build)                 |
 | Package health        | publint, arethetypeswrong                                                                                           |
 | Releases              | changesets                                                                                                          |
 
@@ -28,6 +28,8 @@ Every version is declared once in `pnpm-workspace.yaml` under `catalog:` and ref
 
 ```powershell
 pnpm install --frozen-lockfile   # restore exactly what the lockfile records
+pnpm grammars:generate           # generate each parser's .js + .d.ts into src/generated/
+pnpm grammars:check              # generate twice in isolation, byte-compare, then materialize verified artifacts
 pnpm typecheck                   # tsc -b (source projects) + tsc -p tsconfig.tests.json (tests, scripts, configs)
 pnpm lint
 pnpm format:check                # prettier --check .  (pnpm format to write)
@@ -35,7 +37,7 @@ pnpm test                        # vitest run   (pnpm test:watch, pnpm test:cove
 pnpm conformance:check           # regenerate default-tier expectations and validate retained deep metadata
 pnpm conformance:check:deep      # regenerate every expectation, including deep digests
 pnpm conformance:deep            # full deep regeneration and sharded length-five source census
-pnpm build                       # tsc -b — emits dist/ per package (ESM, .d.ts, source maps)
+pnpm build                       # generate, tsc -b, then copy generated parsers into dist/generated/
 pnpm pack-check                  # publint + arethetypeswrong on the built packages
 pnpm tools:verify                # check external executables against tools/tools.json
 pnpm dedupe --check              # single-version policy: fails if the lockfile could be deduplicated
@@ -68,11 +70,11 @@ texdig/
 │   │   ├── src/
 │   │   │   ├── source/  regions/                          # implemented source and region substrate
 │   │   │   ├── evidence/  origin/                         # semantic overlays; land with binding and expansion
-│   │   │   ├── latex/  bibtex/  log/                      # syntax; latex/grammars/*.peggy + typed facades
+│   │   │   ├── latex/                                     # core syntax, bounded sublanguages, grammars, typed facades
 │   │   │   ├── registry/  binding/  expand/  project/     # semantics (non-mutating overlays)
 │   │   │   │   └── registry/records/{curated,harvested}/  # one format per kind; custody by directory
-│   │   │   ├── query/  transform/  render/  validate/     # intrinsic terminals
-│   │   │   └── generated/                                 # peggy output (.js + peggy-emitted .d.ts) — gitignored
+│   │   │   ├── query/  transform/  render/  validate/     # intrinsic terminals; compile/log adapter in validate/
+│   │   │   └── generated/                                 # nine parser pairs (.js + peggy-emitted .d.ts) — gitignored
 │   │   ├── dist/                # gitignored — tsc emit
 │   │   └── node_modules/        # gitignored — symlinks into the pnpm store
 │   ├── projections/             # @texdig/projections — added at the projections phase
@@ -107,7 +109,7 @@ Unit tests are colocated as `*.test.ts` beside the module they cover and are exc
 
 ### Generated code and caches
 
-- `src/generated/` holds compiled grammars, is gitignored, and is rebuilt by the codegen script; CI checks that regeneration is deterministic. peggy emits each parser's `.d.ts` alongside its `.js` (`--dts`, `--return-types`), so TypeScript resolves generated modules through ordinary sibling-declaration lookup and no declaration files are written by hand. A typed facade module is the only importer of each generated parser. Harvest-emitted records are committed with a generated-file header and provenance.
+- `pnpm grammars:generate` emits each Peggy parser's `.js` and `.d.ts` pair into `src/generated/`, which is gitignored. `pnpm grammars:check` generates every pair twice in isolated workspace-local directories, byte-compares both artifacts, and only then materializes one verified set in `src/generated/`. `pnpm build` copies all pairs into `dist/generated/` after TypeScript emit, preserving the package's `dist`-only boundary without enabling `allowJs`. TypeScript resolves generated modules through ordinary sibling-declaration lookup; typed facades are the only importers, and no declaration is handwritten. Harvest-emitted records are committed with a generated-file header and provenance.
 - No hand-written `.d.ts` files are expected. If a dependency ever ships without types, its shim lives in a conventional `types/` directory (created only then) and is listed here.
 - Tool caches stay inside `node_modules/` (eslint, prettier, vitest) or `dist/` (`.tsbuildinfo`). Test coverage is written to `coverage/`, gitignored.
 

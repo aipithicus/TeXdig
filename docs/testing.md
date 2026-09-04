@@ -35,6 +35,7 @@ TeXdig's verification approach combines deterministic property tests over the ke
 | `fixtures/negative-spec/` | Synthetic fixtures that isolate one property each                                        |
 | `fixtures/demo/`          | A small set of complete, license-cleared documents                                       |
 | `fixtures/conformance/`   | Line-oriented source and region laws with explicit rows and deterministic census digests |
+| `fixtures/mechanics/`     | Synthetic byte-accounting checkpoints, including `mini_article`                          |
 
 Fixtures are byte-exact; `.gitattributes` marks `fixtures/**` as `-text` so line endings are never normalized.
 
@@ -49,6 +50,7 @@ Larger corpora of real documents are exercised by downstream applications that c
 ## 5. Running the Suites
 
 ```powershell
+pnpm grammars:check
 pnpm test
 pnpm conformance:check
 pnpm conformance:check:deep
@@ -56,6 +58,8 @@ pnpm conformance:deep
 ```
 
 Unit tests are colocated as `*.test.ts`; cross-package differential and negative-specification suites live under `tests/`.
+`grammars:check` generates every Peggy parser twice in isolated workspace-local directories, byte-compares each `.js` and `.d.ts`, and materializes the verified artifacts needed by source-level tests. CI runs it before typechecking and building.
+The parent-oracle manifest inventories 82 test-side files with producer revision, license, lineage, and snapshot coordinates. Its executable controls cover public start rules, strict residue rejection, and deterministic timeout behavior. The eight bounded syntax checkpoints exercise argspec, alignment, glue, tabular, xcolor, pgfkeys, TikZ, and BibTeX independently; LaTeX log parsing is reserved for the compile adapter.
 The ordinary test command runs the default conformance tier: every explicit family, the 346,200 UTF-8 class sequences through length four, the seeded UTF-8 random census, the 500-case occurrence lookup and batch-rebasing census, the 500-case occurrence-selection Boolean census, the 500-case SpanSet bitmap and rebasing census, and all 5,461 strict-stack pairing words through length six. `conformance:check` regenerates default-tier fixture content and validates the retained deep digest header and count without recomputing its value.
 
 `conformance:deep` concurrently recomputes all fixture digests and checks the 7,962,624 length-five UTF-8 class sequences against the oracle and source implementation. It shards source validation across a bounded number of processes; `TEXDIG_CONFORMANCE_WORKERS` overrides that count for diagnosis. The dedicated Ubuntu workflow reports a result for every pull request, but runs the census only when executable UTF-8 decoding, class-oracle, digest-canonicalization, deep-runner, or toolchain inputs change; region-only fixture work exits after the diff check. It also runs nightly on `main`, on relevant `main` pushes, on version tags, and on manual request. A release requires a deep result for the release commit.

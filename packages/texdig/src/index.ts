@@ -6,3 +6,4 @@
  */
 export * from "./source/index.js";
 export * from "./regions/index.js";
+export * from "./latex/index.js";

@@ -15,6 +15,7 @@
   "include": [
     "packages/*/src/**/*.test.ts",
     "tests/**/*.ts",
+    "testkit/**/*.ts",
     "scripts/**/*.ts",
     "eslint.config.ts",
     "vitest.config.ts"

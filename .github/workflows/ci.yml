@@ -32,6 +32,7 @@ jobs:
       # single-version policy: fails if the lockfile could be deduplicated
       - run: pnpm dedupe --check
 
+      - run: pnpm grammars:check
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm format:check
