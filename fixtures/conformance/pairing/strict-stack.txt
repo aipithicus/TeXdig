@@ -1,0 +1,13 @@
+# family: pairing/strict-stack
+# schema: 1
+# generator: texdig-conformance 0.0.0
+# rule: all words of length zero through six over OA,OB,CA,CB in that order; base-4 codes ascend and position zero receives the least-significant digit; each token occupies [2*position,2*position+1); separate compatible open and close batches discover their selected tokens from right to left, with ordinals local to each role
+# laws: PAIR1 PAIR2 PAIR3 PAIR4 PAIR5 PAIR6
+# digest: sha256:9a0b5ab1edf23bf78a61d0f56edfb7fe6d20565bbfd445469dc40b97afcc7c98 canon:rows-v1 count:5461 tier:default
+
+- ; E:utf-8 ; T:- ; P:keys-equal/pairing-oracle@1 ; M:- ; R:- ; X:- ; D:- ; U:- ; O:- ; C:- ; V:-
+00 00 00 00 ; E:utf-8 ; T:OA,CA ; P:keys-equal/pairing-oracle@1 ; M:0>0 ; R:- ; X:- ; D:- ; U:- ; O:- ; C:- ; V:[0,3)
+00 00 00 00 00 00 00 00 ; E:utf-8 ; T:OA,OB,CB,CA ; P:keys-equal/pairing-oracle@1 ; M:0>1,1>0 ; R:- ; X:- ; D:- ; U:- ; O:- ; C:- ; V:[0,7)
+00 00 00 00 00 00 00 00 ; E:utf-8 ; T:OA,OB,CA,CA ; P:keys-equal/pairing-oracle@1 ; M:1>0 ; R:X0>1/B/A ; X:0>1/B/A ; D:- ; U:- ; O:0 ; C:1 ; V:[0,7)
+00 00 00 00 00 00 ; E:utf-8 ; T:CA,OA,OB ; P:keys-equal/pairing-oracle@1 ; M:- ; R:D0@[0,1),U0@6,U1@6 ; X:- ; D:0@[0,1) ; U:0@6,1@6 ; O:0,1 ; C:0 ; V:-
+00 00 00 00 00 00 00 00 ; E:utf-8 ; T:OA,CA,OB,CB ; P:keys-equal/pairing-oracle@1 ; M:1>1,0>0 ; R:- ; X:- ; D:- ; U:- ; O:- ; C:- ; V:[0,3),[4,7)
