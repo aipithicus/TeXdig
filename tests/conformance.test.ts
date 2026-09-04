@@ -210,7 +210,7 @@ function expectDigest(
 }
 
 describe("conformance format", () => {
-  it("parses all eight families", () => {
+  it("parses all eight source families", () => {
     const paths = [
       "utf8/named.txt",
       "utf8/classes.txt",

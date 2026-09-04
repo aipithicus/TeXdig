@@ -20,6 +20,28 @@ const MAX_INT32 = 0x7fff_ffff;
 const MIN_INT32 = -0x8000_0000;
 const OCCURRENCE_TOKEN = /^[A-Za-z0-9][A-Za-z0-9._+-]*$/;
 
+/** Independently translate occurrence geometry while preserving discovery metadata. */
+export function occurrenceRebaseOracle(
+  claims: readonly OracleOccurrence[],
+  delta: number,
+): readonly OracleOccurrence[] {
+  if (!Number.isSafeInteger(delta) || delta < 0) {
+    throw new RangeError("invalid occurrence rebase delta");
+  }
+  return claims.map((claim) => {
+    const required: Omit<OracleOccurrence, "ruleId"> = {
+      start: claim.start + delta,
+      end: claim.end + delta,
+      kind: claim.kind,
+      producer: claim.producer,
+      priority: claim.priority,
+    };
+    return Object.freeze(
+      claim.ruleId === undefined ? required : { ...required, ruleId: claim.ruleId },
+    );
+  });
+}
+
 function assertOccurrenceToken(value: string, name: string): void {
   if (!OCCURRENCE_TOKEN.test(value)) {
     throw new SyntaxError(`invalid ${name} fixture token: ${value}`);

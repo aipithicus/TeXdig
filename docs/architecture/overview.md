@@ -30,6 +30,8 @@ projections              query · text edits · serializers · HTML/Markdown ter
 - Every source byte is represented by syntax or by explicit residue. The accounting is part of the parse result.
 - Original bytes are preserved; encoding and line-ending facts (CRLF, non-UTF-8 material) are recorded, not normalized away.
 
+The implemented Phase 2 substrate exposes immutable `SourceSnapshot`, `SourceTopology`, and `SourceSlice` values; snapshot-bound `OccurrenceBatch`, `OccurrenceSelection`, and `SpanSet` collections; and strict-stack pairing with typed mismatch, dangling-close, and unclosed-open residue. Collection rebasing is explicit and checked, while selection and pairing retain their exact ordinal bases.
+
 ---
 
 ## 3. Knowledge & Evidence

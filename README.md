@@ -9,6 +9,7 @@ TeXdig synthesizes the capabilities of unified-latex and latex-utensils on a new
 ## Architecture in One View
 
 ```text
+source substrate       bytes · snapshots · topology · slices · occurrences · coverage · pairing
 lossless syntax        tokens + trivia + CST + recovery diagnostics
 evidence overlays      registry · scopes · binding · definitions · expansion origins   (non-mutating)
 project graph          .tex · .bib · .bbl · .log · included files
@@ -38,7 +39,7 @@ projections            query · text edits · serializers · HTML/Markdown termi
 
 ## Status
 
-Pre-release. The repository is in its scaffolding phase. The kernel contracts are specified in [`docs/specification/contracts.md`](docs/specification/contracts.md) and are implemented in dependency order, kernel tiers first.
+Pre-release. Phase 2's source and thin-region substrate is complete and fixture-green: byte-preserving snapshots/topology/slices, occurrence batches and selections, normalized coverage, strict-stack pairing, and twelve language-neutral conformance families. Phase 3 opens with the synthetic `mini_article` mechanics slice before broader grammar work. The governing kernel contracts remain in [`docs/specification/contracts.md`](docs/specification/contracts.md).
 
 ---
 

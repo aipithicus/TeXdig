@@ -18,7 +18,10 @@ import {
   parseFixture,
   row,
 } from "../scripts/conformance/format.ts";
-import type { OracleInterval } from "../scripts/conformance/span-set-oracle.ts";
+import {
+  rebaseSpanSetOracle,
+  type OracleInterval,
+} from "../scripts/conformance/span-set-oracle.ts";
 import {
   SourceSlice,
   SourceSnapshot,
@@ -176,6 +179,48 @@ function checkBasisLaws(
   }
 }
 
+function checkNestedRebaseLaw(
+  bytes: Uint8Array,
+  declaredEncoding: string,
+  leftRaw: readonly OracleInterval[],
+): void {
+  const rootBytes = new Uint8Array(bytes.length + 3);
+  rootBytes[0] = 0x41;
+  rootBytes[1] = 0x42;
+  rootBytes.set(bytes, 2);
+  rootBytes[rootBytes.length - 1] = 0x43;
+  const root = new SourceSnapshot(rootBytes, {
+    sourceId: "span-set-rebase-root.tex",
+    revision: 0,
+    declaredEncoding,
+  });
+  const outer = SourceSlice.create(root, byteSpan(1, root.byteLength - 1));
+  const inner = SourceSlice.create(outer.child, byteSpan(1, outer.child.byteLength));
+  const direct = SourceSlice.create(root, byteSpan(2, root.byteLength - 1));
+  const local = SpanSet.from(
+    inner.child,
+    leftRaw.map((item) => byteSpan(item.start, item.end)),
+  );
+  const directLocal = SpanSet.from(
+    direct.child,
+    leftRaw.map((item) => byteSpan(item.start, item.end)),
+  );
+  const nestedRoot = local.toParent(inner).toParent(outer);
+  const directRoot = directLocal.toParent(direct);
+  const expectedRoot = SpanSet.from(
+    root,
+    rebaseSpanSetOracle(leftRaw, 2).map((item) => byteSpan(item.start, item.end)),
+  );
+
+  requireSame(nestedRoot, expectedRoot, "B6 nested elementwise rebase");
+  requireSame(directRoot, expectedRoot, "B6 direct elementwise rebase");
+  requireSame(nestedRoot.toChild(outer).toChild(inner), local, "B6 nested round trip");
+  requireError(
+    () => SpanSet.from(root, [byteSpan(0, 1)]).toChild(outer),
+    "B6 nested outside rejection",
+  );
+}
+
 function sourceRow(expected: string): string {
   const fields = expected.split(" ; ");
   if (fields.length !== 16) throw new SyntaxError(`invalid span-set row: ${expected}`);
@@ -226,6 +271,7 @@ function sourceRow(expected: string): string {
   );
   if (inside) requireSame(left.toChild(slice), rebased, "B6 direct downward rebase");
   else requireError(() => left.toChild(slice), "B6 outside downward rebase");
+  checkNestedRebaseLaw(bytes, declaredEncoding, leftRaw);
 
   const membership = Array.from({ length: source.byteLength }, (_, offset) =>
     left.contains(byteOffset(offset)) ? "1" : "0",

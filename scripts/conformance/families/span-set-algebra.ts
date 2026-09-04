@@ -104,7 +104,7 @@ export function buildSpanSetAlgebra(): GeneratedFamily {
         ["seed", `0x${SPAN_SET_SEED.toString(16).toUpperCase()}`],
         [
           "rule",
-          "500 cases; length=next()%17; leftCount=next()%9 then two boundary draws per left span; rightCount=next()%9 then two boundary draws per right span; final two boundary draws form the slice window; each pair is sorted and may be empty",
+          "500 cases; length=next()%17; leftCount=next()%9 then two boundary draws per left span; rightCount=next()%9 then two boundary draws per right span; final two boundary draws form the slice window; each pair is sorted and may be empty; nested rebasing wraps each input with ASCII prefixes 41 then 42 and suffix 43",
         ],
         ["laws", "B1 B2 B3 B4 B5 B6"],
         [

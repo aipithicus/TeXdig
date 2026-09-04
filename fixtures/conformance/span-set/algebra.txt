@@ -2,7 +2,7 @@
 # schema: 1
 # generator: texdig-conformance 0.0.0
 # seed: 0x5E7A2026
-# rule: 500 cases; length=next()%17; leftCount=next()%9 then two boundary draws per left span; rightCount=next()%9 then two boundary draws per right span; final two boundary draws form the slice window; each pair is sorted and may be empty
+# rule: 500 cases; length=next()%17; leftCount=next()%9 then two boundary draws per left span; rightCount=next()%9 then two boundary draws per right span; final two boundary draws form the slice window; each pair is sorted and may be empty; nested rebasing wraps each input with ASCII prefixes 41 then 42 and suffix 43
 # laws: B1 B2 B3 B4 B5 B6
 # digest: sha256:8f5bc720ae4a369c004a39098f9442bf4dfa431b3fb115418e481d246f94d359 canon:rows-v1 count:500 tier:default
 

@@ -10,6 +10,19 @@ export interface OracleWindow {
   readonly end: number;
 }
 
+/** Independently translate raw coverage geometry without normalizing it. */
+export function rebaseSpanSetOracle(
+  intervals: readonly OracleInterval[],
+  delta: number,
+): readonly OracleInterval[] {
+  if (!Number.isSafeInteger(delta) || delta < 0) {
+    throw new RangeError("invalid span-set rebase delta");
+  }
+  return intervals.map((interval) =>
+    Object.freeze({ start: interval.start + delta, end: interval.end + delta }),
+  );
+}
+
 function validateInterval(length: number, candidate: OracleInterval): void {
   if (
     !Number.isSafeInteger(candidate.start) ||

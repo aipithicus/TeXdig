@@ -66,7 +66,7 @@ texdig/
 │   │   ├── package.json         # exports map → ./dist/…; files: ["dist"]
 │   │   ├── tsconfig.json        # extends base; composite; rootDir src → outDir dist
 │   │   ├── src/
-│   │   │   ├── source/  regions/                          # foundational geometry; lands first
+│   │   │   ├── source/  regions/                          # implemented Phase 2 substrate
 │   │   │   ├── evidence/  origin/                         # semantic overlays; land with binding and expansion
 │   │   │   ├── latex/  bibtex/  log/                      # syntax; latex/grammars/*.peggy + typed facades
 │   │   │   ├── registry/  binding/  expand/  project/     # semantics (non-mutating overlays)

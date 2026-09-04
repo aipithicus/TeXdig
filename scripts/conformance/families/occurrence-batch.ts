@@ -105,9 +105,9 @@ export function buildOccurrenceBatch(): GeneratedFamily {
         ["seed", `0x${OCCURRENCE_SEED.toString(16).toUpperCase()}`],
         [
           "rule",
-          "500 cases; length=1+next()%12; bytes=next()%256; claimCount=next()%13; per claim start=next()%length, end=start+1+next()%(length-start), kind=next()%4, producer=next()%3, priority=next()%9-4, rule=next()%3",
+          "500 cases; length=1+next()%12; bytes=next()%256; claimCount=next()%13; per claim start=next()%length, end=start+1+next()%(length-start), kind=next()%4, producer=next()%3, priority=next()%9-4, rule=next()%3; rebasing wraps each input as the inner child of ASCII prefixes 41 then 42 and suffix 43",
         ],
-        ["laws", "O1 O2 O3 O4 O5"],
+        ["laws", "O1 O2 O3 O4 O5 O6"],
         [
           "digest",
           digestHeader({
