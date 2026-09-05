@@ -8,7 +8,7 @@ export default defineConfig({
     },
   },
   test: {
-    include: ["packages/*/src/**/*.test.ts", "tests/**/*.test.ts"],
+    include: ["packages/*/src/**/*.test.ts", "tests/**/*.test.ts", "scripts/registry/**/*.test.ts"],
     passWithNoTests: true,
     coverage: {
       provider: "v8",

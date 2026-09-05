@@ -41,6 +41,8 @@ projections            query · text edits · serializers · HTML/Markdown termi
 
 Pre-release. The source and thin-region substrate is fixture-green, and the first syntax surface is implemented: byte-exact LaTeX token/trivia/CST/residue accounting, explicit lexical-state runs for name regimes and verbatim, eight bounded sublanguage checkpoints, deterministic generation of nine Peggy parsers, and an 82-file parent-oracle inventory. External corpus evidence remains milestone work rather than a routine repository gate. The governing kernel contracts remain in [`docs/specification/contracts.md`](docs/specification/contracts.md).
 
+The [`texdig/registry`](docs/registry.md) surface provides immutable, provider-scoped knowledge: eighteen harvested source families, authority-cited house corrections, separate assertion and capability statuses, and deterministic collision results. Callers select providers explicitly; source activation and argument binding are later consumers. Registry presence does not establish package support.
+
 ---
 
 ## Documentation
@@ -53,6 +55,7 @@ Pre-release. The source and thin-region substrate is fixture-green, and the firs
 | [**Design Principles**](docs/architecture/design-principles.md)    | Principles that shape the engine and questions for placing new capabilities.         |
 | [**Grammar Capability Ledger**](docs/grammar-capability-ledger.md) | Fourteen parent grammars, consumers, fault lines, authority, and TeXdig disposition. |
 | [**Kernel Contracts**](docs/specification/contracts.md)            | The contracts the engine is built to, including the registry and binding contracts.  |
+| [**Registry**](docs/registry.md)                                   | Catalog API, record custody, harvest commands, and verification limits.              |
 | [**Scope & Non-Goals**](docs/specification/non-goals.md)           | Deliberately absent features and boundaries.                                         |
 | [**Capability Outlook**](docs/specification/capability-outlook.md) | Later capabilities and open design questions, without release commitments.           |
 | [**Verification & Testing**](docs/testing.md)                      | Verification approach, fixture tiers, and the boundary with external corpus runs.    |

@@ -78,6 +78,7 @@ Before concluding any implementation task or refactor, run and pass:
 
 ```powershell
 pnpm grammars:check
+pnpm registry:check
 pnpm typecheck
 pnpm lint
 pnpm test

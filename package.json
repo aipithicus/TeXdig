@@ -22,6 +22,8 @@
     "mechanics:fixtures:generate": "node scripts/generate-mechanics-fixtures.ts",
     "grammars:generate": "node scripts/build-grammars.ts",
     "grammars:check": "node scripts/build-grammars.ts --check",
+    "registry:generate": "pnpm build && node scripts/generate-registry.ts",
+    "registry:check": "pnpm build && pnpm typecheck && vitest run scripts/registry packages/texdig/src/registry && node scripts/generate-registry.ts --check",
     "conformance:generate": "node scripts/generate-conformance.ts",
     "conformance:check": "node scripts/generate-conformance.ts --check",
     "conformance:check:deep": "node scripts/generate-conformance.ts --check --deep",

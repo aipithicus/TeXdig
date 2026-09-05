@@ -28,6 +28,10 @@
       "types": "./dist/latex/index.d.ts",
       "default": "./dist/latex/index.js"
     },
+    "./registry": {
+      "types": "./dist/registry/index.d.ts",
+      "default": "./dist/registry/index.js"
+    },
     "./package.json": "./package.json"
   },
   "publishConfig": {

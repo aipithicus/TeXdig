@@ -51,6 +51,7 @@ Larger corpora of real documents are exercised by downstream applications that c
 
 ```powershell
 pnpm grammars:check
+pnpm registry:check
 pnpm test
 pnpm conformance:check
 pnpm conformance:check:deep
@@ -58,6 +59,7 @@ pnpm conformance:deep
 ```
 
 Unit tests are colocated as `*.test.ts`; cross-package differential and negative-specification suites live under `tests/`.
+Registry boundary tests live in `scripts/registry/`. `registry:check` builds and typechecks the engine and scripts, runs the catalog and harvest suites, verifies committed record/receipt consistency, and compares two synthetic generations in distinct operation-owned temporary directories. It runs without upstream source or network access. The optional `-- --source-root <clean-checkout>` form additionally verifies the pinned source bytes and compares two complete harvests with the committed tree. Both forms are described in [Registry](registry.md). Run the registry gate before standalone `pnpm test` in a fresh checkout so tests can consume the built argspec facade.
 `grammars:check` generates every Peggy parser twice in isolated workspace-local directories, byte-compares each `.js` and `.d.ts`, and materializes the verified artifacts needed by source-level tests. CI runs it before typechecking and building.
 The parent-oracle manifest inventories 82 test-side files with producer revision, license, lineage, and snapshot coordinates. Its executable controls cover public start rules, strict residue rejection, and deterministic timeout behavior. The eight bounded syntax checkpoints exercise argspec, alignment, glue, tabular, xcolor, pgfkeys, TikZ, and BibTeX independently; LaTeX log parsing is reserved for the compile adapter.
 The ordinary test command runs the default conformance tier: every explicit family, the 346,200 UTF-8 class sequences through length four, the seeded UTF-8 random census, the 500-case occurrence lookup and batch-rebasing census, the 500-case occurrence-selection Boolean census, the 500-case SpanSet bitmap and rebasing census, and all 5,461 strict-stack pairing words through length six. `conformance:check` regenerates default-tier fixture content and validates the retained deep digest header and count without recomputing its value.

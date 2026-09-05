@@ -1,0 +1,8 @@
+name	signature	arguments
+mode	s d<> d{}	3
+setbeamertemplate	m o o d{}	4
+onslide	t+ t* d<> d{}	4
+frame	!d<> !o !o !d{} !d{}	5
+block	!d<> !d{} !d<>	3
+alertblock	!d<> !d{} !d<>	3
+exampleblock	!d<> !d{} !d<>	3

@@ -69,6 +69,8 @@ This document states the contracts the TeXdig engine is built to. Implementation
 - Precedence at binding: document-tier definitions and document-shipped style files, then house records, then upstream-derived records.
 - Document-tier knowledge is read by the definition tier and is never written back to the registry.
 - Records are TypeScript typed literals in one format regardless of author; harvest pipelines emit TypeScript with a generated-file header and per-record provenance.
+- Assertion status (`verified`, `parent-asserted`, `disputed`, `deferred`) is independent of target capability (`supported`, `unsupported`, `partial`, `unknown`). Presence alone establishes neither.
+- The current [catalog API](../registry.md) accepts explicitly selected provider ids and retains effective and shadowed assertions. Selection does not evaluate document scope, provider versions, or invocation arguments; those are binding-tier responsibilities.
 
 ## 11. Binding Contract
 

@@ -11,6 +11,18 @@ latex-utensils
   Copyright (c) 2015-2019 Michael Brade, Jason Siefken
   Copyright (c) 2019 Takashi Tamura
 
+The harvested registry records and registry differential fixtures derive from
+unified-latex at revision 3c1350edbc8f13ccfbbd5d96919391fefa4d268d.
+Selected source and generated-output digests are recorded in
+scripts/registry/receipts/parent-records.ts. The MIT notice below applies.
+
+Curated registry assertions cite factual declarations in the LaTeX kernel and
+standard classes at https://github.com/latex3/latex2e, revision
+20a58e9da170677b33916b27cdfa71f7768a93f4. Those authority sources are published
+under LPPL-1.3c-or-later; their license and input digests are recorded in
+scripts/registry/curated-authorities.ts. These assertions record independently
+authored facts and citations, without copying the LaTeX implementation.
+
 ---
 
 MIT License
@@ -32,4 +44,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-

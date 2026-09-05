@@ -30,6 +30,9 @@ Every version is declared once in `pnpm-workspace.yaml` under `catalog:` and ref
 pnpm install --frozen-lockfile   # restore exactly what the lockfile records
 pnpm grammars:generate           # generate each parser's .js + .d.ts into src/generated/
 pnpm grammars:check              # generate twice in isolation, byte-compare, then materialize verified artifacts
+pnpm registry:check              # build, typecheck, registry tests, committed custody and synthetic determinism
+pnpm registry:check -- --source-root <clean-checkout> # also re-harvest the pinned upstream twice
+pnpm registry:generate -- --source-root <clean-checkout> # explicit maintainer write mode
 pnpm typecheck                   # tsc -b (source projects) + tsc -p tsconfig.tests.json (tests, scripts, configs)
 pnpm lint
 pnpm format:check                # prettier --check .  (pnpm format to write)
@@ -71,8 +74,9 @@ texdig/
 │   │   │   ├── source/  regions/                          # implemented source and region substrate
 │   │   │   ├── evidence/  origin/                         # semantic overlays; land with binding and expansion
 │   │   │   ├── latex/                                     # core syntax, bounded sublanguages, grammars, typed facades
-│   │   │   ├── registry/  binding/  expand/  project/     # semantics (non-mutating overlays)
-│   │   │   │   └── registry/records/{curated,harvested}/  # one format per kind; custody by directory
+│   │   │   ├── registry/                                # types, immutable catalog, public index
+│   │   │   │   └── records/{curated,harvested}/          # typed assertions; custody by directory
+│   │   │   ├── binding/  expand/  project/               # later semantics (non-mutating overlays)
 │   │   │   ├── query/  transform/  render/  validate/     # intrinsic terminals; compile/log adapter in validate/
 │   │   │   └── generated/                                 # nine parser pairs (.js + peggy-emitted .d.ts) — gitignored
 │   │   ├── dist/                # gitignored — tsc emit
@@ -112,6 +116,7 @@ Unit tests are colocated as `*.test.ts` beside the module they cover and are exc
 
 - `pnpm grammars:generate` emits each Peggy parser's `.js` and `.d.ts` pair into `src/generated/`, which is gitignored. `pnpm grammars:check` generates every pair twice in isolated workspace-local directories, byte-compares both artifacts, and only then materializes one verified set in `src/generated/`. `pnpm build` copies all pairs into `dist/generated/` after TypeScript emit, preserving the package's `dist`-only boundary without enabling `allowJs`. TypeScript resolves generated modules through ordinary sibling-declaration lookup; typed facades are the only importers, and no declaration is handwritten. Harvest-emitted records are committed with a generated-file header and provenance.
 - No hand-written `.d.ts` files are expected. If a dependency ever ships without types, its shim lives in a conventional `types/` directory (created only then) and is listed here.
+- Registry harvesters use the pinned TypeScript compiler API without executing input modules. Committed records and receipts are TypeScript literals checked by the ordinary compiler projects. `registry:check` is self-contained without an upstream checkout; its optional source root must match the clean revision and exact input bytes in `scripts/registry/source-manifest.ts`. Both registry commands build first because signature normalization consumes the built argspec facade. See [Registry](docs/registry.md) for source custody and output boundaries.
 - Tool caches stay inside `node_modules/` (eslint, prettier, vitest) or `dist/` (`.tsbuildinfo`). Test coverage is written to `coverage/`, gitignored.
 
 ### Temporary workspaces
