@@ -72,11 +72,13 @@ texdig/
 │   │   ├── tsconfig.json        # extends base; composite; rootDir src → outDir dist
 │   │   ├── src/
 │   │   │   ├── source/  regions/                          # implemented source and region substrate
-│   │   │   ├── evidence/  origin/                         # semantic overlays; land with binding and expansion
+│   │   │   ├── evidence/                                  # consumed semantic status, location, licensing types
+│   │   │   ├── origin/                                    # later derived expansion origins
 │   │   │   ├── latex/                                     # core syntax, bounded sublanguages, grammars, typed facades
 │   │   │   ├── registry/                                # types, immutable catalog, public index
 │   │   │   │   └── records/{curated,harvested}/          # typed assertions; custody by directory
-│   │   │   ├── binding/  expand/  project/               # later semantics (non-mutating overlays)
+│   │   │   ├── binding/                                  # source-backed invocation and argument overlays
+│   │   │   ├── expand/  project/                         # later semantic consumers
 │   │   │   ├── query/  transform/  render/  validate/     # intrinsic terminals; compile/log adapter in validate/
 │   │   │   └── generated/                                 # nine parser pairs (.js + peggy-emitted .d.ts) — gitignored
 │   │   ├── dist/                # gitignored — tsc emit

@@ -17,7 +17,7 @@ Provider ids identify a kernel, class, or package. Commands retain their exact n
 
 Selection returns `unknown`, `single`, `compatible`, or `conflict`, together with all matching assertions, effective assertions, shadowed assertions, unknown provider ids, and individual conflicts. An unknown provider makes the selection `unknown` while preserving any known matches and conflicts. House precedence applies within the same provider, subject, and applicability condition; shadowed parent assertions remain available for inspection. Different providers retain separate authority. Disputed or deferred effective assertions produce an unresolved-assertion conflict. Compatible assertions agree where their declared facets overlap; absent metadata is not a disagreement or affirmative knowledge.
 
-Selection does not evaluate version conditions or applicability against source. The inherited TikZ conditional table retains `tikz-body` applicability, and the xparse provider has an explicitly unknown version condition. A later binder must license these conditions and any required strategy before claiming resolution. A `single` result describes the catalog query, not a bound invocation.
+Selection does not evaluate version conditions or applicability against source. The inherited TikZ conditional table retains `tikz-body` applicability, and the xparse provider has an explicitly unknown version condition. The [argument binder](binding.md) requires these conditions and any required strategy to be licensed before claiming resolution. A `single` result describes the catalog query, not a bound invocation.
 
 ## Knowledge and capability
 

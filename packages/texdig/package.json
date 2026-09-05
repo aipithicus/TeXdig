@@ -32,6 +32,10 @@
       "types": "./dist/registry/index.d.ts",
       "default": "./dist/registry/index.js"
     },
+    "./binding": {
+      "types": "./dist/binding/index.d.ts",
+      "default": "./dist/binding/index.js"
+    },
     "./package.json": "./package.json"
   },
   "publishConfig": {
