@@ -78,6 +78,7 @@ texdig/
 │   │   │   ├── registry/                                # types, immutable catalog, public index
 │   │   │   │   └── records/{curated,harvested}/          # typed assertions; custody by directory
 │   │   │   ├── binding/                                  # source-backed invocation and argument overlays
+│   │   │   ├── definitions/                              # source activation, document declarations and scope
 │   │   │   ├── expand/  project/                         # later semantic consumers
 │   │   │   ├── query/  transform/  render/  validate/     # intrinsic terminals; compile/log adapter in validate/
 │   │   │   └── generated/                                 # nine parser pairs (.js + peggy-emitted .d.ts) — gitignored

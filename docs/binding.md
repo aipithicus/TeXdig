@@ -32,3 +32,5 @@ The interpreter covers mandatory tokens/groups, optional/star/token tests, paire
 Body arguments require a paired environment context. The inherited fixed-delimiter `v` pattern and custom Listings, Minted, and TikZ argument strategies remain unavailable. Unknown lexical state, invalid source bytes, and unclosed enclosing groups produce typed uncertainty. Source activation, definitions, expansion, and full TeX execution are separate concerns.
 
 `normalizeArgumentPattern` is shared by binding consumers and registry harvesting. It consumes the existing argspec facade and preserves structured patterns. Unsupported grammar input is rejected without installing a second grammar. The stored vocabulary is bounded and does not claim every contemporary document-command extension.
+
+[Source activation and definitions](definitions.md) supplies source-position authority over explicitly ordered units. Document licenses identify the defining occurrence while preserving the lower registry selection. Classic declaration readers use their documented non-nesting optional-bracket profile.

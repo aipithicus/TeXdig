@@ -91,6 +91,27 @@ export function bindInvocation(
         assumptions.push(Object.freeze({ kind: "applicability", detail: assertion.applicability }));
     }
     for (const facet of assertion.facets) {
+      if (facet.role === "version-requirement") {
+        const version = options.providerVersions?.find(
+          (v) => v.providerId === assertion.provider.id,
+        );
+        if (
+          version === undefined ||
+          !/^\d{4}-\d{2}-\d{2}$/u.test(version.date) ||
+          version.date < facet.sinceDate
+        )
+          fail(
+            "unresolved-version",
+            `Assertion ${assertion.id} requires a provider dated ${facet.sinceDate} or later.`,
+          );
+        else
+          assumptions.push(
+            Object.freeze({
+              kind: "provider-version",
+              detail: `${assertion.provider.id}@${version.date}`,
+            }),
+          );
+      }
       if (facet.role === "argument-language" && facet.language !== "argspec")
         fail(
           "unavailable-strategy",
@@ -106,7 +127,16 @@ export function bindInvocation(
   if (signature === undefined) fail("unavailable-strategy", "No argument pattern is licensed.");
   const binding =
     diagnostics.length === 0 && signature !== undefined
-      ? bindArguments(invocation, signature.pattern)
+      ? bindArguments(invocation, signature.pattern, {
+          classicBrackets: selection.effectiveAssertions.some((a) =>
+            a.facets.some(
+              (f) =>
+                f.role === "summon" ||
+                (f.role === "definition-form" &&
+                  (f.form.family === "classic-command" || f.form.family === "classic-environment")),
+            ),
+          ),
+        })
       : undefined;
   return Object.freeze({
     invocation,

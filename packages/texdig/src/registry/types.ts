@@ -85,7 +85,37 @@ export type ContentStrategy =
   | "bibliography-items"
   | "tikz-conditional-arguments";
 
+/** Closed language facts consumed by document-definition discovery. */
+export interface DefinitionForm {
+  readonly family:
+    | "classic-command"
+    | "classic-environment"
+    | "document-command"
+    | "document-environment"
+    | "primitive"
+    | "alias"
+    | "declaration";
+  readonly operation: "new" | "renew" | "provide" | "declare" | "alias";
+  readonly global: boolean;
+  readonly body: "literal" | "expanded" | "unavailable";
+  /** Located declaration targets for constructors whose execution remains unavailable. */
+  readonly target?: { readonly kind: "command" | "environment"; readonly nameArgument: number };
+}
+
 export type RegistryFacet =
+  | { readonly role: "definition-prefix"; readonly flag: "global" | "long" | "outer" }
+  | { readonly role: "definition-form"; readonly form: DefinitionForm }
+  | {
+      readonly role: "summon";
+      readonly providerKind: "class" | "package";
+      readonly nameArgument: number;
+    }
+  | {
+      readonly role: "environment-boundary";
+      readonly side: "open" | "close";
+      readonly nameArgument: number;
+    }
+  | { readonly role: "version-requirement"; readonly sinceDate: string }
   | {
       readonly role: "signature";
       readonly spelling: string;

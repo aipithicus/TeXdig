@@ -7,7 +7,7 @@ import {
   RegistryCatalog,
 } from "../../packages/texdig/dist/registry/index.js";
 import { registryValueKey } from "../../packages/texdig/src/registry/catalog.ts";
-import { CURATED_SOURCE } from "./curated-authorities.ts";
+import { CURATED_SOURCE, TEX_SOURCE, MATH_TOOLS_SOURCE } from "./curated-authorities.ts";
 import { emitRecords, HARVEST_DIRECTORY } from "./emit-records.ts";
 import { VALID_SOURCE } from "./fixtures/cases.ts";
 import {
@@ -108,10 +108,12 @@ export async function checkRegistry(): Promise<void> {
     throw new Error("harvested record outside source manifest");
   for (const assertion of CURATED_RECORDS) {
     const authority = assertion.provenance.authority;
-    const input = CURATED_SOURCE.inputs.find((item) => item.path === authority.path);
+    const source = [CURATED_SOURCE, TEX_SOURCE, MATH_TOOLS_SOURCE].find(
+      (source) =>
+        source.repository === authority.repository && source.revision === authority.revision,
+    );
+    const input = source?.inputs.find((item) => item.path === authority.path);
     if (
-      authority.repository !== CURATED_SOURCE.repository ||
-      authority.revision !== CURATED_SOURCE.revision ||
       input?.sha256 !== authority.inputDigest ||
       input.license !== authority.license ||
       assertion.provenance.custody !== "curated"

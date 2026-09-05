@@ -2,7 +2,7 @@ import type { LatexParseResult } from "../latex/index.js";
 import type { ArgumentPattern, ArgumentToken, RegistrySelection } from "../registry/types.js";
 import type { ByteSpan, SourceSnapshot } from "../source/index.js";
 import type {
-  RegistryLicense,
+  SemanticLicense,
   SemanticAssumption,
   SemanticDiagnostic,
   SemanticStatus,
@@ -102,7 +102,7 @@ export interface InvocationBinding {
   readonly invocation: InvocationView;
   readonly status: SemanticStatus;
   readonly selection: RegistrySelection;
-  readonly license?: RegistryLicense;
+  readonly license?: SemanticLicense;
   readonly assumptions: readonly SemanticAssumption[];
   readonly pattern?: readonly ArgumentPattern[];
   readonly arguments: readonly BoundArgument[];

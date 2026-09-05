@@ -36,6 +36,10 @@
       "types": "./dist/binding/index.d.ts",
       "default": "./dist/binding/index.js"
     },
+    "./definitions": {
+      "types": "./dist/definitions/index.d.ts",
+      "default": "./dist/definitions/index.js"
+    },
     "./package.json": "./package.json"
   },
   "publishConfig": {

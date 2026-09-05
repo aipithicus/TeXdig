@@ -23,13 +23,25 @@ export interface SemanticDiagnostic {
     | "paragraph-not-allowed"
     | "syntax-residue"
     | "unsupported-argument-form"
-    | "invalid-argument-pattern";
+    | "invalid-argument-pattern"
+    | "dynamic-provider-name"
+    | "dynamic-definition-name"
+    | "definition-precondition"
+    | "unsupported-definition"
+    | "indeterminate-source-context"
+    | "unclassified-declaration-candidate";
   readonly location: SourceLocation;
   readonly message: string;
 }
 
 export interface SemanticAssumption {
-  readonly kind: "explicit-providers" | "parent-assertion" | "provider-version" | "applicability";
+  readonly kind:
+    | "explicit-providers"
+    | "parent-assertion"
+    | "provider-version"
+    | "applicability"
+    | "ordered-source-units"
+    | "known-undefined";
   readonly detail: string;
 }
 
@@ -37,3 +49,11 @@ export interface RegistryLicense {
   readonly kind: "registry";
   readonly assertions: readonly RegistryAssertion[];
 }
+
+export interface DefinitionLicense {
+  readonly kind: "definition";
+  readonly definitionId: string;
+  readonly declaration: SourceLocation;
+}
+
+export type SemanticLicense = RegistryLicense | DefinitionLicense;

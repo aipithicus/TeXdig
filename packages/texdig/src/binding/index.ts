@@ -18,4 +18,6 @@ export type {
   SemanticDiagnostic,
   SemanticAssumption,
   RegistryLicense,
+  DefinitionLicense,
+  SemanticLicense,
 } from "../evidence/types.js";

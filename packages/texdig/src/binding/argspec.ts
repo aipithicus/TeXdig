@@ -42,6 +42,7 @@ function required(spec: ArgumentPattern): boolean {
 export function bindArguments(
   invocation: InvocationView,
   pattern: readonly ArgumentPattern[],
+  profile: { readonly classicBrackets?: boolean; readonly preserveUntilSpaces?: boolean } = {},
 ): ArgumentBinding {
   const { items, endIndex } = invocation.candidates;
   const args: BoundArgument[] = [];
@@ -197,9 +198,8 @@ export function bindArguments(
     const followingWordSpace = previous?.kind === "command" && previous.controlWord;
     const index = skipTrivia(
       cursor,
-      !spec.modifiers.includes("!") ||
-        required(spec) ||
-        laterRequired ||
+      (!(spec.code === "u" && profile.preserveUntilSpaces === true) &&
+        (!spec.modifiers.includes("!") || required(spec) || laterRequired)) ||
         initialWordSpace ||
         followingWordSpace,
     );
@@ -273,7 +273,12 @@ export function bindArguments(
       for (; end < endIndex; end++) {
         const current = items[end];
         if (spelling(current) === close) depth--;
-        else if (open !== close && spelling(current) === open) depth++;
+        else if (
+          open !== close &&
+          spelling(current) === open &&
+          !(profile.classicBrackets === true && open === "[")
+        )
+          depth++;
         if (depth === 0) break;
       }
       if (end === endIndex || token === undefined) {

@@ -57,6 +57,11 @@ function facetKey(facet: RegistryFacet): string {
     case "signature":
     case "argument-language":
     case "provider-advice":
+    case "definition-form":
+    case "definition-prefix":
+    case "summon":
+    case "environment-boundary":
+    case "version-requirement":
       return facet.role;
   }
 }

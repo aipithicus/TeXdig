@@ -1,6 +1,6 @@
 export { RegistryCatalog } from "./catalog.js";
 export { HARVESTED_RECORDS } from "./records/harvested/index.js";
-export { CURATED_RECORDS } from "./records/curated/kernel.js";
+export { CURATED_RECORDS } from "./records/curated/index.js";
 export type {
   Provider,
   RegistrySubject,
@@ -13,6 +13,7 @@ export type {
   ArgumentPattern,
   ArgumentStrategy,
   ContentStrategy,
+  DefinitionForm,
   RegistryFacet,
   RegistryAssertion,
   RegistryConflict,

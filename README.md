@@ -41,7 +41,7 @@ projections            query · text edits · serializers · HTML/Markdown termi
 
 Pre-release. The source and thin-region substrate is fixture-green, and the first syntax surface is implemented: byte-exact LaTeX token/trivia/CST/residue accounting, explicit lexical-state runs for name regimes and verbatim, eight bounded sublanguage checkpoints, deterministic generation of nine Peggy parsers, and an 82-file parent-oracle inventory. External corpus evidence remains milestone work rather than a routine repository gate. The governing kernel contracts remain in [`docs/specification/contracts.md`](docs/specification/contracts.md).
 
-The [`texdig/registry`](docs/registry.md) surface provides immutable, provider-scoped knowledge: eighteen harvested source families, authority-cited house corrections, separate assertion and capability statuses, and deterministic collision results. [`texdig/binding`](docs/binding.md) interprets explicitly selected signatures into source-backed arguments and licensed hulls, with uncertainty retained. Source activation and definitions are separate consumers. Registry presence does not establish package support.
+The [`texdig/registry`](docs/registry.md) surface provides immutable, provider-scoped knowledge: eighteen harvested source families, authority-cited house records, separate assertion and capability statuses, and deterministic collision results. [`texdig/binding`](docs/binding.md) interprets selected signatures into source-backed arguments and licensed hulls. [`texdig/definitions`](docs/definitions.md) analyzes literal summons and scoped document declarations over caller-ordered source units, retaining preconditions and uncertainty. Registry presence does not establish package support.
 
 ---
 
