@@ -13,7 +13,7 @@ interface GrammarSpecification {
 const WORKSPACE_ROOT = resolve(import.meta.dirname, "..");
 const SOURCE_GENERATED = resolve(WORKSPACE_ROOT, "packages/texdig/src/generated");
 const DIST_GENERATED = resolve(WORKSPACE_ROOT, "packages/texdig/dist/generated");
-const SCRATCH_ROOT = resolve(WORKSPACE_ROOT, ".codex");
+const TEMP_ROOT = resolve(WORKSPACE_ROOT, "temp");
 const PEGGY_CLI = fileURLToPath(import.meta.resolve("peggy/bin/peggy.js"));
 
 const GRAMMARS: readonly GrammarSpecification[] = Object.freeze([
@@ -121,8 +121,8 @@ async function withScratchDirectory<T>(
   prefix: string,
   action: (path: string) => Promise<T>,
 ): Promise<T> {
-  await mkdir(SCRATCH_ROOT, { recursive: true });
-  const path = await mkdtemp(join(SCRATCH_ROOT, prefix));
+  await mkdir(TEMP_ROOT, { recursive: true });
+  const path = await mkdtemp(join(TEMP_ROOT, prefix));
   try {
     return await action(path);
   } finally {

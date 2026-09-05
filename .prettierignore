@@ -3,6 +3,9 @@ fixtures/
 tools/
 artifacts/
 coverage/
+private/
+temp/*
+!temp/README.md
 **/dist/
 **/src/generated/
 node_modules/

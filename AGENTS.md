@@ -43,6 +43,11 @@ Do not guess architectural details — consult the relevant source. Contract doc
 - `fixtures/` — byte-exact fixtures by role (`differential/`, `negative-spec/`, `demo/`). `tests/` — cross-package suites. `scripts/` — codegen and harvest tooling. `docs/` — project documentation.
 - The full tree is in [`DEVELOPMENT.md`](DEVELOPMENT.md).
 
+### Temporary Work
+
+- `temp/` is the workspace-local scratch root for agents and automation. Follow [`temp/README.md`](temp/README.md): allocate a unique child directory for each operation and clean up only that owned child.
+- Never use `.codex/` for scratch; it is reserved for Codex project configuration. Disposable work does not become evidence merely by surviving a run; move retained run outputs to `artifacts/` and promote fixtures or source through normal review.
+
 ### Language & Filetype Standards
 
 - TypeScript for everything authored. Every `.ts` file belongs to a tsconfig project checked by `tsc --noEmit`; Node's type stripping is not verification.

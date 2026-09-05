@@ -82,6 +82,7 @@ texdig/
 ├── fixtures/                    # byte-exact: conformance/  differential/  negative-spec/  demo/
 ├── tests/                       # cross-package suites
 ├── scripts/                     # conformance/, generation, verification, codegen, harvest — all in tsconfig.tests.json
+├── temp/                        # tracked convention + gitignored, operation-owned scratch directories
 ├── tools/                       # external executables (gitignored) + tools.json (committed manifest)
 ├── private/                     # gitignored — local glue scripts that drive external corpus runs (AGENTS.md, Private/)
 ├── artifacts/                   # run outputs — gitignored, never imported as source
@@ -112,6 +113,10 @@ Unit tests are colocated as `*.test.ts` beside the module they cover and are exc
 - `pnpm grammars:generate` emits each Peggy parser's `.js` and `.d.ts` pair into `src/generated/`, which is gitignored. `pnpm grammars:check` generates every pair twice in isolated workspace-local directories, byte-compares both artifacts, and only then materializes one verified set in `src/generated/`. `pnpm build` copies all pairs into `dist/generated/` after TypeScript emit, preserving the package's `dist`-only boundary without enabling `allowJs`. TypeScript resolves generated modules through ordinary sibling-declaration lookup; typed facades are the only importers, and no declaration is handwritten. Harvest-emitted records are committed with a generated-file header and provenance.
 - No hand-written `.d.ts` files are expected. If a dependency ever ships without types, its shim lives in a conventional `types/` directory (created only then) and is listed here.
 - Tool caches stay inside `node_modules/` (eslint, prettier, vitest) or `dist/` (`.tsbuildinfo`). Test coverage is written to `coverage/`, gitignored.
+
+### Temporary workspaces
+
+- [`temp/README.md`](temp/README.md) defines the shared scratch contract for development tools, automation, and agents. Each operation owns a uniquely allocated child directory under `temp/`; durable run evidence belongs in `artifacts/`, and `.codex/` remains configuration-only.
 
 ### Fixtures
 

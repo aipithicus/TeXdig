@@ -13,6 +13,8 @@ export default defineConfig(
       "artifacts/**",
       "coverage/**",
       "fixtures/**",
+      "private/**",
+      "temp/**",
       "tools/**",
     ],
   },

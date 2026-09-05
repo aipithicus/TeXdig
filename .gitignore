@@ -3,10 +3,16 @@ DocOps.md
 .grok/
 .claude/
 .cursor/
+
+
+.ignore
 .mcp.json
 
 coverage/
 private/ 
+
+temp/*
+!temp/README.md
 
 **/.snapshot/**
 **/.doc-dive/**
