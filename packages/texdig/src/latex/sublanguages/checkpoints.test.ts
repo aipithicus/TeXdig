@@ -70,6 +70,50 @@ describe("bounded LaTeX sublanguage checkpoints", () => {
     expect(realizeSublanguage(result)).toEqual(snapshot.copyBytes());
   });
 
+  it("keeps delimiter tokens separate from groups and adjacent argument codes", () => {
+    const snapshot = source("λd{}m +!r{} D{}{x} R{}{{x}} d\\open\\close u{END}");
+    const result = parseArgspec(snapshot, { span: byteSpan(2, snapshot.byteLength) });
+    const nodes = result.value === null ? [] : descendantNodes(result.value);
+    const args = nodes.filter((node) => node.kind === "argument");
+    expect(result.residue).toEqual([]);
+    expect(args.map((node) => node.fields)).toEqual([
+      { modifiers: "", code: "d", open: "{", close: "}" },
+      { modifiers: "", code: "m" },
+      { modifiers: "+!", code: "r", open: "{", close: "}" },
+      { modifiers: "", code: "D", open: "{", close: "}", defaultValue: "{x}" },
+      { modifiers: "", code: "R", open: "{", close: "}", defaultValue: "{{x}}" },
+      { modifiers: "", code: "d", open: "\\open", close: "\\close" },
+      { modifiers: "", code: "u", stop: "{END}" },
+    ]);
+    expect(args[0]?.span).toEqual(byteSpan(2, 5));
+    expect(args[1]?.span).toEqual(byteSpan(5, 6));
+    expect(realizeSublanguage(result)).toEqual(snapshot.copyBytes(result.span));
+    expect(parseArgspec(source("d{")).residue).toHaveLength(1);
+  });
+
+  it.each([
+    ["mode", "s d<> d{}", 3],
+    ["setbeamertemplate", "m o o d{}", 4],
+    ["onslide", "t+ t* d<> d{}", 4],
+    ["frame", "!d<> !o !o !d{} !d{}", 5],
+    ["block", "!d<> !d{} !d<>", 3],
+    ["alertblock", "!d<> !d{} !d<>", 3],
+    ["exampleblock", "!d<> !d{} !d<>", 3],
+  ])("preserves the brace pair in the Beamer %s signature", (_name, spelling, count) => {
+    // Source relationship: the pinned parent's brace_spec reads two tokens.
+    // These signatures must remain literal, including their positional variants.
+    const snapshot = source(spelling);
+    const result = parseArgspec(snapshot);
+    const args =
+      result.value === null
+        ? []
+        : descendantNodes(result.value).filter((node) => node.kind === "argument");
+    expect(result.residue).toEqual([]);
+    expect(args).toHaveLength(count);
+    expect(args.some((node) => node.fields.open === "{" && node.fields.close === "}")).toBe(true);
+    expect(realizeSublanguage(result)).toEqual(snapshot.copyBytes());
+  });
+
   it("locates alignment row and column separators without splitting groups", () => {
     const snapshot = source("a&{b&c}\\\\d%tail");
     const result = parseAlignment(snapshot);
